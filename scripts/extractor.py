@@ -1,9 +1,10 @@
 """
 LLM-based structured extractor.
 
-Talks to Xiaomi MiMo via its OpenAI-compatible API and uses
-OpenAI-style function calling (`tool_choice`) to force structured
-JSON output. Two-phase flow for vendor pages:
+Talks to any OpenAI-compatible chat completions endpoint (currently
+defaulting to Kimi / Moonshot AI) and uses OpenAI-style function
+calling (`tool_choice`) to force structured JSON output. Two-phase
+flow for vendor pages:
 
     1. discover_latest   — given list/docs pages, identify the current
                            flagship model name and up to 3 candidate
@@ -12,6 +13,10 @@ JSON output. Two-phase flow for vendor pages:
                            pull the official benchmark numbers.
 
 Leaderboard pages still use a single-shot extraction.
+
+Provider is controlled entirely by env vars (LLM_API_KEY /
+LLM_BASE_URL / LLM_MODEL) so switching to DeepSeek, Qwen, etc. is
+a config change, not a code change.
 """
 
 from __future__ import annotations
@@ -23,9 +28,9 @@ from typing import Any
 
 from openai import OpenAI
 
-MODEL_ID = os.environ.get("MIMO_MODEL", "mimo-v2-pro")
-BASE_URL = os.environ.get("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1")
-MAX_HTML_CHARS = int(os.environ.get("MIMO_MAX_HTML_CHARS", "30000"))
+MODEL_ID = os.environ.get("LLM_MODEL", "kimi-k2.5")
+BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.moonshot.ai/v1")
+MAX_HTML_CHARS = int(os.environ.get("LLM_MAX_HTML_CHARS", "30000"))
 
 # ---------------- JSON schemas ----------------
 
@@ -91,9 +96,9 @@ def _clean(text: str) -> str:
 
 
 def _client() -> OpenAI:
-    api_key = os.environ.get("MIMO_API_KEY")
+    api_key = os.environ.get("LLM_API_KEY")
     if not api_key:
-        raise RuntimeError("MIMO_API_KEY environment variable is not set")
+        raise RuntimeError("LLM_API_KEY environment variable is not set")
     return OpenAI(api_key=api_key, base_url=BASE_URL)
 
 
