@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 模型监控 · AI Model Monitor</title>
+    <meta name="description" content="实时追踪各大 AI 厂商最新模型与基准测试得分 · Latest flagship AI models and benchmark scores" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%236ee7ff' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%236ee7ff'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>
+          <span data-i18n="title.zh">AI 模型监控</span>
+          <span class="sep">·</span>
+          <span data-i18n="title.en">AI Model Monitor</span>
+        </h1>
+      </div>
+      <div class="meta">
+        <span class="updated" id="last-updated">—</span>
+        <button id="lang-toggle" type="button" class="btn" title="Language">
+          <span data-i18n="btn.lang">中 / EN</span>
+        </button>
+        <button id="theme-toggle" type="button" class="btn" title="Theme">◐</button>
+      </div>
+    </header>
+
+    <main>
+      <p class="intro">
+        <span data-i18n="intro.zh"
+          >汇总 OpenAI、Anthropic、Google、DeepSeek、智谱 GLM、小米 MiMo、MiniMax
+          当前最新旗舰模型及基准测试得分。数据由 GitHub Actions 每日抓取自动更新。</span
+        >
+        <span data-i18n="intro.en"
+          >Tracks the latest flagship models and benchmark scores from OpenAI, Anthropic, Google,
+          DeepSeek, Zhipu GLM, Xiaomi MiMo, and MiniMax. Refreshed daily via GitHub Actions.</span
+        >
+      </p>
+
+      <section id="vendor-grid" class="grid" aria-live="polite"></section>
+    </main>
+
+    <footer>
+      <span data-i18n="footer.zh"
+        >基准分数来源：厂商官方公告 + LMArena / LiveBench / Artificial Analysis</span
+      >
+      <span data-i18n="footer.en"
+        >Scores from vendor announcements + LMArena / LiveBench / Artificial Analysis</span
+      >
+    </footer>
+
+    <template id="card-template">
+      <article class="card">
+        <header class="card-head">
+          <div>
+            <h2 class="vendor-name"></h2>
+            <p class="product"></p>
+          </div>
+          <span class="status"></span>
+        </header>
+        <div class="model">
+          <div class="model-name"></div>
+          <div class="model-meta">
+            <time class="release-date"></time>
+            <a class="source" target="_blank" rel="noopener"></a>
+          </div>
+        </div>
+        <div class="scores">
+          <h3 data-i18n="card.official.zh">官方得分</h3>
+          <h3 data-i18n="card.official.en">Official scores</h3>
+          <ul class="official-scores"></ul>
+        </div>
+        <div class="third-party">
+          <h3 data-i18n="card.third.zh">第三方榜单</h3>
+          <h3 data-i18n="card.third.en">Third-party</h3>
+          <ul class="third-party-scores"></ul>
+        </div>
+      </article>
+    </template>
+
+    <script src="assets/app.js" defer></script>
+  </body>
+</html>
