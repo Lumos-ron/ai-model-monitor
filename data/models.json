@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T06:48:35Z",
+  "last_updated": "2026-04-09T07:00:54Z",
   "vendors": [
     {
       "id": "openai",
@@ -10,7 +10,7 @@
         "id": "",
         "display_name": "GPT-5.4",
         "release_date": "",
-        "source_url": "https://openai.com/index/gpt-5-3-instant/"
+        "source_url": "https://openai.com/news/"
       },
       "official_scores": [
         {
@@ -30,7 +30,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1347.0,
+        "lmarena_elo": 1358.0,
         "livebench_avg": 74.8,
         "aa_intelligence_index": 57.17
       },
@@ -45,8 +45,8 @@
       "latest_model": {
         "id": "",
         "display_name": "Claude Opus 4.6",
-        "release_date": "2026-02-05",
-        "source_url": "https://www.anthropic.com/news/claude-opus-4-6"
+        "release_date": "",
+        "source_url": "https://www.anthropic.com/news"
       },
       "official_scores": [
         {
@@ -112,7 +112,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1376.0,
+        "lmarena_elo": 1342.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -125,10 +125,10 @@
       "name_en": "DeepSeek",
       "product": "DeepSeek Chat",
       "latest_model": {
-        "id": "deepseek-chat",
+        "id": "",
         "display_name": "DeepSeek V3.2",
-        "release_date": "2025-12-01",
-        "source_url": "https://api-docs.deepseek.com/news/news251201"
+        "release_date": "",
+        "source_url": "https://api-docs.deepseek.com/news/"
       },
       "official_scores": [
         {
@@ -163,7 +163,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1358.0,
+        "lmarena_elo": 1335.0,
         "aa_intelligence_index": 41.71,
         "livebench_avg": 70.2
       },
@@ -177,55 +177,35 @@
       "product": "GLM",
       "latest_model": {
         "id": "",
-        "display_name": "GLM-4.5",
+        "display_name": "GLM-5.1",
         "release_date": "",
         "source_url": "https://open.bigmodel.cn/dev/howuse/model"
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 83.5,
-          "unit": "%"
-        },
-        {
           "benchmark": "GPQA Diamond",
-          "score": 78.2,
+          "score": 86.8,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 12.2,
-          "unit": "%"
-        },
-        {
-          "benchmark": "LiveCodeBench",
-          "score": 73.8,
+          "score": 28.0,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 38.4,
-          "unit": "%"
-        },
-        {
-          "benchmark": "MATH-500",
-          "score": 97.9,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 87.3,
+          "score": 36.1,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 44.1,
+          "score": 76.3,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1332.0,
-        "aa_intelligence_index": 26.42,
+        "lmarena_elo": 1298.0,
+        "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
       "fetch_status": "ok",
@@ -238,35 +218,35 @@
       "product": "MiMo",
       "latest_model": {
         "id": "",
-        "display_name": "MiMo-V2-Flash",
+        "display_name": "MiMo-V2-Pro",
         "release_date": "",
-        "source_url": "https://github.com/XiaomiMiMo/MiMo-V2-Flash"
+        "source_url": "https://github.com/XiaomiMiMo"
       },
       "official_scores": [
         {
           "benchmark": "GPQA Diamond",
-          "score": 83.5,
+          "score": 87.0,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 20.0,
+          "score": 28.3,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 36.7,
+          "score": 39.5,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 71.8,
+          "score": 68.8,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1315.0,
-        "aa_intelligence_index": 41.46,
+        "lmarena_elo": 1312.0,
+        "aa_intelligence_index": 49.2,
         "livebench_avg": 66.4
       },
       "fetch_status": "ok",
@@ -279,9 +259,9 @@
       "product": "abab / MiniMax-Text",
       "latest_model": {
         "id": "",
-        "display_name": "MiniMax M2.7",
+        "display_name": "MiniMax-M2.7",
         "release_date": "",
-        "source_url": "https://www.minimaxi.com/models/text/m27"
+        "source_url": "https://www.minimaxi.com/news"
       },
       "official_scores": [
         {
@@ -306,7 +286,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1294.0,
+        "lmarena_elo": 1284.0,
         "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
