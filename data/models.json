@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T06:04:11Z",
+  "last_updated": "2026-04-09T06:06:01Z",
   "vendors": [
     {
       "id": "openai",
@@ -15,7 +15,7 @@
       "official_scores": [],
       "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "anthropic",
@@ -33,7 +33,7 @@
         "lmarena_elo": 1497.0
       },
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "google",
@@ -51,7 +51,7 @@
         "lmarena_elo": 1493.0
       },
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "deepseek",
@@ -78,7 +78,7 @@
       ],
       "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "zhipu",
@@ -94,7 +94,7 @@
       "official_scores": [],
       "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "xiaomi",
@@ -110,7 +110,7 @@
       "official_scores": [],
       "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     },
     {
       "id": "minimax",
@@ -126,7 +126,7 @@
       "official_scores": [],
       "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'specified' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
     }
   ]
 }
