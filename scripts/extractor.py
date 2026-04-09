@@ -25,7 +25,7 @@ from openai import OpenAI
 
 MODEL_ID = os.environ.get("MIMO_MODEL", "mimo-v2-pro")
 BASE_URL = os.environ.get("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1")
-MAX_HTML_CHARS = 60_000
+MAX_HTML_CHARS = int(os.environ.get("MIMO_MAX_HTML_CHARS", "30000"))
 
 # ---------------- JSON schemas ----------------
 

@@ -221,9 +221,10 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
             "source_url": source_url,
         },
         "official_scores": official_scores,
-        # carry over previous third-party scores; they'll be refreshed
-        # below if the leaderboard pass succeeds.
-        "third_party_scores": dict(prev_block.get("third_party_scores", {})),
+        # carry over previous third-party scores (sanitized — drop any
+        # stale nulls or stringified numbers left over from earlier
+        # runs). Will be refreshed below if the leaderboard pass works.
+        "third_party_scores": _sanitize_third_party(prev_block.get("third_party_scores")),
         "fetch_status": "ok",
         "fetch_error": None if official_scores else ("no benchmarks found: " + "; ".join(phase2_notes) if phase2_notes else None),
     }
@@ -250,6 +251,19 @@ def _coerce_score(raw: Any) -> float | None:
         except ValueError:
             return None
     return None
+
+
+def _sanitize_third_party(scores: dict[str, Any] | None) -> dict[str, float]:
+    """Drop nulls and coerce stringified numbers when we inherit the
+    previous vendor block. Runs regardless of whether the current
+    leaderboard pass succeeds, so stale junk from earlier runs can't
+    survive indefinitely."""
+    out: dict[str, float] = {}
+    for k, v in (scores or {}).items():
+        num = _coerce_score(v)
+        if num is not None:
+            out[k] = num
+    return out
 
 
 def update_leaderboard_scores(vendor_blocks: list[dict[str, Any]]) -> None:
@@ -298,6 +312,11 @@ def main() -> int:
 
     print("Updating third-party leaderboards…", file=sys.stderr)
     update_leaderboard_scores(vendor_blocks)
+
+    # Final sanitize — covers error-path blocks that inherited stale
+    # third_party_scores via deepcopy without going through update_vendor.
+    for vb in vendor_blocks:
+        vb["third_party_scores"] = _sanitize_third_party(vb.get("third_party_scores"))
 
     payload = {
         "last_updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
