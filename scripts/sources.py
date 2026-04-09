@@ -11,6 +11,17 @@ from typing import List
 
 
 @dataclass
+class BenchmarkPage:
+    slug: str         # URL slug under /evaluations/
+    label: str        # display name on the card (e.g. "GPQA Diamond")
+    unit: str         # '%' for percentages, '' otherwise
+
+    @property
+    def url(self) -> str:
+        return f"https://artificialanalysis.ai/evaluations/{self.slug}"
+
+
+@dataclass
 class Vendor:
     id: str
     name_zh: str
@@ -54,10 +65,15 @@ VENDORS: List[Vendor] = [
         name_en="Google",
         product="Gemini",
         urls=[
+            "https://deepmind.google/models/gemini/",
             "https://blog.google/technology/google-deepmind/",
             "https://ai.google.dev/gemini-api/docs/models",
         ],
-        flagship_hint="Latest Gemini flagship (Ultra / Pro tier).",
+        flagship_hint=(
+            "Latest Gemini flagship (Pro / Ultra tier). "
+            "Include preview releases if they are the newest (e.g. 'Gemini 3.1 Pro Preview'). "
+            "Always include the version number in display_name."
+        ),
     ),
     Vendor(
         id="deepseek",
@@ -119,11 +135,21 @@ class Leaderboard:
     score_field: str
 
 
-# Artificial Analysis is the primary benchmark source (handled directly
-# in the benchmark phase, not as a generic leaderboard) because it
-# aggregates normalised per-model scores for MMLU-Pro / GPQA / HLE /
-# LiveCodeBench / MATH / AIME / IFBench across every major vendor.
-AA_MODELS_URL = "https://artificialanalysis.ai/models"
+# Primary per-benchmark sources: Artificial Analysis publishes one
+# leaderboard page per benchmark under /evaluations/{slug}, listing
+# every model with its normalised score. Much more reliable than
+# scraping each vendor's own announcement blog, where HTML shape
+# varies wildly and score units are ambiguous.
+AA_BENCHMARK_PAGES: List[BenchmarkPage] = [
+    BenchmarkPage("mmlu-pro", "MMLU-Pro", "%"),
+    BenchmarkPage("gpqa-diamond", "GPQA Diamond", "%"),
+    BenchmarkPage("humanitys-last-exam", "Humanity's Last Exam", "%"),
+    BenchmarkPage("livecodebench", "LiveCodeBench", "%"),
+    BenchmarkPage("scicode", "SciCode", "%"),
+    BenchmarkPage("math-500", "MATH-500", "%"),
+    BenchmarkPage("aime-2025", "AIME 2025", "%"),
+    BenchmarkPage("ifbench", "IFBench", "%"),
+]
 
 
 LEADERBOARDS: List[Leaderboard] = [
@@ -138,5 +164,11 @@ LEADERBOARDS: List[Leaderboard] = [
         name="LiveBench",
         url="https://livebench.ai/",
         score_field="livebench_avg",
+    ),
+    Leaderboard(
+        id="aa_intelligence_index",
+        name="Artificial Analysis Intelligence Index",
+        url="https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index",
+        score_field="aa_intelligence_index",
     ),
 ]

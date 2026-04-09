@@ -31,8 +31,8 @@ from urllib.parse import urlparse
 
 import requests
 
-from extractor import discover_latest, extract_aa_scores, extract_benchmarks, extract_leaderboard
-from sources import AA_MODELS_URL, LEADERBOARDS, VENDORS, Vendor
+from extractor import discover_latest, extract_benchmarks, extract_leaderboard
+from sources import AA_BENCHMARK_PAGES, LEADERBOARDS, VENDORS, Vendor
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "data" / "models.json"
@@ -139,20 +139,6 @@ def _is_http_url(candidate: str) -> bool:
 
 # ---------------- vendor discovery (phase A) ----------------
 
-# AA keys → (benchmark display name, unit) for official_scores rendering.
-# Order here is the order benchmarks appear on the card.
-AA_METRIC_LABELS: list[tuple[str, str, str]] = [
-    ("mmlu_pro", "MMLU-Pro", "%"),
-    ("gpqa_diamond", "GPQA Diamond", "%"),
-    ("humanitys_last_exam", "Humanity's Last Exam", "%"),
-    ("livecodebench", "LiveCodeBench", "%"),
-    ("scicode", "SciCode", "%"),
-    ("math_500", "MATH-500", "%"),
-    ("aime", "AIME", "%"),
-    ("ifbench", "IFBench", "%"),
-]
-
-
 def discover_vendor(
     vendor: Vendor, prev: dict[str, Any]
 ) -> tuple[dict[str, Any], list[str]]:
@@ -227,64 +213,67 @@ def discover_vendor(
 
 # ---------------- AA benchmark pass (phase B) ----------------
 
-def aa_metrics_to_official_scores(metrics: dict[str, Any]) -> list[dict[str, Any]]:
-    """Turn an AA per-model metrics dict into the official_scores list shape
-    consumed by the frontend. Drops missing / unparseable fields."""
-    out: list[dict[str, Any]] = []
-    for key, label, unit in AA_METRIC_LABELS:
-        num = _coerce_score(metrics.get(key))
-        if num is None:
-            continue
-        out.append({"benchmark": label, "score": num, "unit": unit})
-    return out
+def apply_aa_benchmarks(vendor_blocks: list[dict[str, Any]]) -> set[str]:
+    """Phase B: for each benchmark in AA_BENCHMARK_PAGES, fetch the
+    dedicated AA leaderboard page (e.g. /evaluations/gpqa-diamond) and
+    ask the LLM which score each of our vendors' flagship models has on
+    that benchmark. Accumulate a per-vendor score list and assign it to
+    each vendor's `official_scores` in the order of AA_BENCHMARK_PAGES.
 
+    AA runs every benchmark themselves under a consistent evaluation
+    harness, so scores across vendors are directly comparable — which is
+    exactly what the card wants to show.
 
-def apply_aa_scores(vendor_blocks: list[dict[str, Any]]) -> set[str]:
-    """Phase B: fetch Artificial Analysis once and populate official_scores
-    (plus aa_intelligence_index) for every vendor it covers.
-
-    Returns the set of vendor ids whose official_scores were filled, so the
-    caller can skip the per-vendor fallback for them.
+    Returns the set of vendor ids that got at least one AA score, so the
+    caller can skip the per-vendor announcement-page fallback for them.
     """
     filled: set[str] = set()
-    display_names = [
-        vb["latest_model"]["display_name"]
-        for vb in vendor_blocks
-        if vb["latest_model"].get("display_name")
-    ]
+    name_to_id: dict[str, str] = {}
+    display_names: list[str] = []
+    for vb in vendor_blocks:
+        name = vb["latest_model"].get("display_name")
+        if name:
+            display_names.append(name)
+            name_to_id[name] = vb["id"]
     if not display_names:
         return filled
 
-    print("Fetching Artificial Analysis benchmarks…", file=sys.stderr)
-    try:
-        aa_html = fetch(AA_MODELS_URL)
-        aa_data = extract_aa_scores(display_names, aa_html)
-    except Exception as exc:  # noqa: BLE001
-        print(f"[AA] failed: {exc}", file=sys.stderr)
-        return filled
+    per_vendor: dict[str, list[dict[str, Any]]] = {vb["id"]: [] for vb in vendor_blocks}
 
-    if not isinstance(aa_data, dict):
-        print(f"[AA] unexpected response type {type(aa_data)}", file=sys.stderr)
-        return filled
+    for bench in AA_BENCHMARK_PAGES:
+        print(f"[AA] fetching {bench.label}…", file=sys.stderr)
+        try:
+            html = fetch(bench.url)
+            scores = extract_leaderboard(bench.label, display_names, html)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[AA:{bench.slug}] failed: {exc}", file=sys.stderr)
+            continue
+
+        if not isinstance(scores, dict):
+            print(f"[AA:{bench.slug}] unexpected response type {type(scores)}", file=sys.stderr)
+            continue
+
+        for name, raw in scores.items():
+            num = _coerce_score(raw)
+            if num is None:
+                continue
+            vid = name_to_id.get(name)
+            if not vid:
+                continue
+            per_vendor[vid].append({
+                "benchmark": bench.label,
+                "score": num,
+                "unit": bench.unit,
+            })
 
     for vb in vendor_blocks:
-        name = vb["latest_model"].get("display_name")
-        if not name:
+        scores = per_vendor.get(vb["id"]) or []
+        if not scores:
             continue
-        metrics = aa_data.get(name)
-        if not isinstance(metrics, dict):
-            continue
-
-        scores = aa_metrics_to_official_scores(metrics)
-        if scores:
-            vb["official_scores"] = scores
-            vb["fetch_status"] = "ok"
-            vb["fetch_error"] = None
-            filled.add(vb["id"])
-
-        ii = _coerce_score(metrics.get("intelligence_index"))
-        if ii is not None:
-            vb["third_party_scores"]["aa_intelligence_index"] = ii
+        vb["official_scores"] = scores
+        vb["fetch_status"] = "ok"
+        vb["fetch_error"] = None
+        filled.add(vb["id"])
 
     return filled
 
@@ -410,9 +399,9 @@ def main() -> int:
         vendor_blocks.append(block)
         vendor_candidates[vendor.id] = candidates
 
-    # Phase B: pull benchmarks for every vendor from Artificial Analysis
-    # in a single call (normalised cross-vendor numbers).
-    filled = apply_aa_scores(vendor_blocks)
+    # Phase B: pull per-benchmark scores for every vendor from the AA
+    # evaluation leaderboards (one page per benchmark).
+    filled = apply_aa_benchmarks(vendor_blocks)
 
     # Phase C: for any vendor AA didn't cover, fall back to the vendor's
     # own announcement pages.
