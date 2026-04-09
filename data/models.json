@@ -1,5 +1,5 @@
 {
-  "last_updated": null,
+  "last_updated": "2026-04-09T05:36:44Z",
   "vendors": [
     {
       "id": "openai",
@@ -13,9 +13,11 @@
         "source_url": "https://openai.com/news/"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "livebench_avg": null
+      },
+      "fetch_status": "error",
+      "fetch_error": "https://openai.com/news/: 403 Client Error: Forbidden for url: https://openai.com/news/; https://platform.openai.com/docs/models: 403 Client Error: Forbidden for url: https://platform.openai.com/docs/models"
     },
     {
       "id": "anthropic",
@@ -23,15 +25,18 @@
       "name_en": "Anthropic",
       "product": "Claude",
       "latest_model": {
-        "id": "",
-        "display_name": "—",
-        "release_date": "",
-        "source_url": "https://www.anthropic.com/news"
+        "id": "claude-opus-4-6-20250205",
+        "display_name": "Claude Opus 4.6",
+        "release_date": "2026-02-05",
+        "source_url": "https://www.anthropic.com/news/claude-opus-4-6"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "lmarena_elo": "1497",
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "google",
@@ -39,15 +44,18 @@
       "name_en": "Google",
       "product": "Gemini",
       "latest_model": {
-        "id": "",
-        "display_name": "—",
+        "id": "gemini-3.1-pro-preview",
+        "display_name": "Gemini 3.1 Pro",
         "release_date": "",
         "source_url": "https://ai.google.dev/gemini-api/docs/models"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "lmarena_elo": "1493",
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "deepseek",
@@ -55,15 +63,17 @@
       "name_en": "DeepSeek",
       "product": "DeepSeek Chat",
       "latest_model": {
-        "id": "",
-        "display_name": "—",
-        "release_date": "",
-        "source_url": "https://api-docs.deepseek.com/news/"
+        "id": "deepseek-chat",
+        "display_name": "DeepSeek-V3",
+        "release_date": "2024-12-26",
+        "source_url": "https://github.com/deepseek-ai"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "zhipu",
@@ -71,15 +81,17 @@
       "name_en": "Zhipu AI",
       "product": "GLM",
       "latest_model": {
-        "id": "",
-        "display_name": "—",
+        "id": "glm-5.1",
+        "display_name": "GLM-5.1",
         "release_date": "",
         "source_url": "https://open.bigmodel.cn/dev/howuse/model"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "xiaomi",
@@ -88,14 +100,16 @@
       "product": "MiMo",
       "latest_model": {
         "id": "",
-        "display_name": "—",
+        "display_name": "MiMo",
         "release_date": "",
         "source_url": "https://github.com/XiaomiMiMo/MiMo"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "minimax",
@@ -103,15 +117,17 @@
       "name_en": "MiniMax",
       "product": "abab / MiniMax-Text",
       "latest_model": {
-        "id": "",
-        "display_name": "—",
+        "id": "MiniMax-M2.7",
+        "display_name": "MiniMax M2.7",
         "release_date": "",
-        "source_url": "https://www.minimaxi.com/news"
+        "source_url": "https://www.minimaxi.com/models/text/m27"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "stale",
-      "fetch_error": "Waiting for first update run"
+      "third_party_scores": {
+        "livebench_avg": null
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     }
   ]
 }
