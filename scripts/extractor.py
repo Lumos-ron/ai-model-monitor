@@ -137,7 +137,12 @@ def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -
                 },
             }
         ],
-        tool_choice={"type": "function", "function": {"name": tool_name}},
+        # NOTE: use "required" instead of the {"type": "function", ...} form.
+        # Kimi K2.5 rejects the specified form in thinking mode with:
+        #   400 tool_choice 'specified' is incompatible with thinking enabled
+        # "required" still forces a tool call, and since we only advertise one
+        # tool, the model is effectively pinned to it.
+        tool_choice="required",
     )
 
     msg = resp.choices[0].message
