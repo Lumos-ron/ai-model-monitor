@@ -11,17 +11,6 @@ from typing import List
 
 
 @dataclass
-class BenchmarkPage:
-    slug: str         # URL slug under /evaluations/
-    label: str        # display name on the card (e.g. "GPQA Diamond")
-    unit: str         # '%' for percentages, '' otherwise
-
-    @property
-    def url(self) -> str:
-        return f"https://artificialanalysis.ai/evaluations/{self.slug}"
-
-
-@dataclass
 class Vendor:
     id: str
     name_zh: str
@@ -82,9 +71,16 @@ VENDORS: List[Vendor] = [
         product="DeepSeek Chat",
         urls=[
             "https://api-docs.deepseek.com/news/",
+            "https://api-docs.deepseek.com/quick_start/pricing",
             "https://github.com/deepseek-ai",
         ],
-        flagship_hint="Latest DeepSeek flagship (DeepSeek-V3 / R1 reasoning line).",
+        flagship_hint=(
+            "Latest DeepSeek flagship model. Prefer the newest V-series "
+            "release (e.g. DeepSeek V3.2 / V3.1) over the older R1 reasoning "
+            "model — R1 is from early 2025 and has been superseded. "
+            "Always include the version suffix in display_name "
+            "(e.g. 'DeepSeek V3.2', never just 'DeepSeek')."
+        ),
     ),
     Vendor(
         id="zhipu",
@@ -135,23 +131,11 @@ class Leaderboard:
     score_field: str
 
 
-# Primary per-benchmark sources: Artificial Analysis publishes one
-# leaderboard page per benchmark under /evaluations/{slug}, listing
-# every model with its normalised score. Much more reliable than
-# scraping each vendor's own announcement blog, where HTML shape
-# varies wildly and score units are ambiguous.
-AA_BENCHMARK_PAGES: List[BenchmarkPage] = [
-    BenchmarkPage("mmlu-pro", "MMLU-Pro", "%"),
-    BenchmarkPage("gpqa-diamond", "GPQA Diamond", "%"),
-    BenchmarkPage("humanitys-last-exam", "Humanity's Last Exam", "%"),
-    BenchmarkPage("livecodebench", "LiveCodeBench", "%"),
-    BenchmarkPage("scicode", "SciCode", "%"),
-    BenchmarkPage("math-500", "MATH-500", "%"),
-    BenchmarkPage("aime-2025", "AIME 2025", "%"),
-    BenchmarkPage("ifbench", "IFBench", "%"),
-]
-
-
+# Note: primary per-benchmark scores and the Artificial Analysis
+# Intelligence Index are pulled directly from AA's /models page by
+# scripts/aa_parser.py (no LLM, no per-benchmark fetch). These
+# LEADERBOARDS entries are the remaining third-party sources that
+# still need HTML fetching + LLM extraction.
 LEADERBOARDS: List[Leaderboard] = [
     Leaderboard(
         id="lmarena",
@@ -164,11 +148,5 @@ LEADERBOARDS: List[Leaderboard] = [
         name="LiveBench",
         url="https://livebench.ai/",
         score_field="livebench_avg",
-    ),
-    Leaderboard(
-        id="aa_intelligence_index",
-        name="Artificial Analysis Intelligence Index",
-        url="https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index",
-        score_field="aa_intelligence_index",
     ),
 ]

@@ -31,8 +31,14 @@ from urllib.parse import urlparse
 
 import requests
 
+from aa_parser import (
+    AA_FIELD_TO_LABEL,
+    AA_INDEX_FIELD,
+    best_variant,
+    get_aa_scores,
+)
 from extractor import discover_latest, extract_benchmarks, extract_leaderboard
-from sources import AA_BENCHMARK_PAGES, LEADERBOARDS, VENDORS, Vendor
+from sources import LEADERBOARDS, VENDORS, Vendor
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "data" / "models.json"
@@ -214,66 +220,65 @@ def discover_vendor(
 # ---------------- AA benchmark pass (phase B) ----------------
 
 def apply_aa_benchmarks(vendor_blocks: list[dict[str, Any]]) -> set[str]:
-    """Phase B: for each benchmark in AA_BENCHMARK_PAGES, fetch the
-    dedicated AA leaderboard page (e.g. /evaluations/gpqa-diamond) and
-    ask the LLM which score each of our vendors' flagship models has on
-    that benchmark. Accumulate a per-vendor score list and assign it to
-    each vendor's `official_scores` in the order of AA_BENCHMARK_PAGES.
+    """Phase B: pull per-benchmark scores + AA Intelligence Index from
+    Artificial Analysis's /models page in a single request.
 
-    AA runs every benchmark themselves under a consistent evaluation
-    harness, so scores across vendors are directly comparable — which is
-    exactly what the card wants to show.
+    AA is a Next.js App Router site whose RSC Flight payload embeds the
+    full scores table as inline JSON. `aa_parser` decodes that payload
+    with a regex — no headless browser, no LLM — and returns
+    {model_name: {field: score, ...}}. We then fuzzy-match each vendor's
+    discovered display_name to one of AA's variants (preferring the
+    reasoning mode with the highest intelligence_index).
 
-    Returns the set of vendor ids that got at least one AA score, so the
-    caller can skip the per-vendor announcement-page fallback for them.
+    Scores go into `official_scores` in the canonical order given by
+    AA_FIELD_TO_LABEL; AA's `intelligence_index` is lifted directly into
+    `third_party_scores` as a bonus.
+
+    Returns the set of vendor ids that got at least one AA benchmark
+    score, so the caller can skip the per-vendor announcement-page
+    fallback for them.
     """
     filled: set[str] = set()
-    name_to_id: dict[str, str] = {}
-    display_names: list[str] = []
-    for vb in vendor_blocks:
-        name = vb["latest_model"].get("display_name")
-        if name:
-            display_names.append(name)
-            name_to_id[name] = vb["id"]
-    if not display_names:
+    try:
+        aa_models = get_aa_scores()
+    except Exception as exc:  # noqa: BLE001
+        print(f"[AA] fetch/parse failed: {exc}", file=sys.stderr)
+        traceback.print_exc()
         return filled
 
-    per_vendor: dict[str, list[dict[str, Any]]] = {vb["id"]: [] for vb in vendor_blocks}
+    if not aa_models:
+        print("[AA] no models parsed from Flight payload", file=sys.stderr)
+        return filled
 
-    for bench in AA_BENCHMARK_PAGES:
-        print(f"[AA] fetching {bench.label}…", file=sys.stderr)
-        try:
-            html = fetch(bench.url)
-            scores = extract_leaderboard(bench.label, display_names, html)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[AA:{bench.slug}] failed: {exc}", file=sys.stderr)
+    print(f"[AA] parsed {len(aa_models)} models from flight payload", file=sys.stderr)
+
+    for vb in vendor_blocks:
+        display_name = vb["latest_model"].get("display_name") or ""
+        match_name = best_variant(display_name, aa_models)
+        if not match_name:
+            print(f"[AA] no variant matched for {display_name!r}", file=sys.stderr)
             continue
 
-        if not isinstance(scores, dict):
-            print(f"[AA:{bench.slug}] unexpected response type {type(scores)}", file=sys.stderr)
-            continue
+        match_scores = aa_models[match_name]
+        print(f"[AA] {display_name!r} → {match_name!r}", file=sys.stderr)
 
-        for name, raw in scores.items():
+        official: list[dict[str, Any]] = []
+        for field, label in AA_FIELD_TO_LABEL.items():
+            raw = match_scores.get(field)
             num = _coerce_score(raw)
             if num is None:
                 continue
-            vid = name_to_id.get(name)
-            if not vid:
-                continue
-            per_vendor[vid].append({
-                "benchmark": bench.label,
-                "score": num,
-                "unit": bench.unit,
-            })
+            official.append({"benchmark": label, "score": num, "unit": "%"})
 
-    for vb in vendor_blocks:
-        scores = per_vendor.get(vb["id"]) or []
-        if not scores:
-            continue
-        vb["official_scores"] = scores
-        vb["fetch_status"] = "ok"
-        vb["fetch_error"] = None
-        filled.add(vb["id"])
+        if official:
+            vb["official_scores"] = official
+            vb["fetch_status"] = "ok"
+            vb["fetch_error"] = None
+            filled.add(vb["id"])
+
+        idx = _coerce_score(match_scores.get(AA_INDEX_FIELD))
+        if idx is not None:
+            vb["third_party_scores"]["aa_intelligence_index"] = idx
 
     return filled
 
