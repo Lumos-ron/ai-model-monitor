@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T05:48:05Z",
+  "last_updated": "2026-04-09T06:02:37Z",
   "vendors": [
     {
       "id": "openai",
@@ -13,11 +13,9 @@
         "source_url": "https://platform.openai.com/api/docs/guides/latest-model"
       },
       "official_scores": [],
-      "third_party_scores": {
-        "livebench_avg": null
-      },
-      "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://platform.openai.com/api/docs/guides/latest-model: no scores found; https://platform.openai.com/api/docs/models/gpt-5.4: no scores found; https://platform.openai.com/blog/designing-delightful-frontends-with-gpt-5-4: no scores found"
+      "third_party_scores": {},
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "anthropic",
@@ -32,11 +30,10 @@
       },
       "official_scores": [],
       "third_party_scores": {
-        "lmarena_elo": "1497",
-        "livebench_avg": null
+        "lmarena_elo": 1497.0
       },
-      "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://www.anthropic.com/news/claude-opus-4-6: no scores found; https://www.anthropic.com/news/claude-sonnet-4-6: no scores found"
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "google",
@@ -51,11 +48,10 @@
       },
       "official_scores": [],
       "third_party_scores": {
-        "lmarena_elo": "1493",
-        "livebench_avg": null
+        "lmarena_elo": 1493.0
       },
-      "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://ai.google.dev/gemini-api/docs/models/gemini-3.1-pro-preview: no scores found; https://ai.google.dev/gemini-api/docs/gemini-3: no scores found; https://ai.google.dev/gemini-api/docs/models: no scores found"
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "deepseek",
@@ -80,11 +76,9 @@
           "unit": "%"
         }
       ],
-      "third_party_scores": {
-        "livebench_avg": null
-      },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "third_party_scores": {},
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "zhipu",
@@ -98,11 +92,9 @@
         "source_url": "https://open.bigmodel.cn/cn/guide/start/migrate-to-glm-new"
       },
       "official_scores": [],
-      "third_party_scores": {
-        "livebench_avg": null
-      },
-      "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: extract https://open.bigmodel.cn/cn/guide/start/migrate-to-glm-new: Error code: 402 - {'error': {'code': '402', 'message': 'Insufficient account balance', 'type': 'insufficient_balance'}}; extract https://open.bigmodel.cn/cn/guide/start/model-overview: Error code: 402 - {'error': {'code': '402', 'message': 'Insufficient account balance', 'type': 'insufficient_balance'}}; extract https://open.bigmodel.cn/cn/guide/start/introduction: Error code: 402 - {'error': {'code': '402', 'message': 'Insufficient account balance', 'type': 'insufficient_balance'}}"
+      "third_party_scores": {},
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "xiaomi",
@@ -116,11 +108,9 @@
         "source_url": "https://github.com/XiaomiMiMo/MiMo"
       },
       "official_scores": [],
-      "third_party_scores": {
-        "livebench_avg": null
-      },
+      "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 402 - {'error': {'code': '402', 'message': 'Insufficient account balance', 'type': 'insufficient_balance'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     },
     {
       "id": "minimax",
@@ -134,11 +124,9 @@
         "source_url": "https://www.minimaxi.com/models/text/m27"
       },
       "official_scores": [],
-      "third_party_scores": {
-        "livebench_avg": null
-      },
+      "third_party_scores": {},
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 402 - {'error': {'code': '402', 'message': 'Insufficient account balance', 'type': 'insufficient_balance'}}"
+      "fetch_error": "discover: Error code: 400 - {'error': {'message': 'invalid temperature: only 1 is allowed for this model', 'type': 'invalid_request_error'}}"
     }
   ]
 }
