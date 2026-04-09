@@ -28,7 +28,7 @@ from typing import Any
 
 from openai import OpenAI
 
-MODEL_ID = os.environ.get("LLM_MODEL", "kimi-k2.5")
+MODEL_ID = os.environ.get("LLM_MODEL", "kimi-k2-turbo-preview")
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.moonshot.ai/v1")
 MAX_HTML_CHARS = int(os.environ.get("LLM_MAX_HTML_CHARS", "30000"))
 
@@ -137,11 +137,11 @@ def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -
                 },
             }
         ],
-        # NOTE: use "required" instead of the {"type": "function", ...} form.
-        # Kimi K2.5 rejects the specified form in thinking mode with:
-        #   400 tool_choice 'specified' is incompatible with thinking enabled
-        # "required" still forces a tool call, and since we only advertise one
-        # tool, the model is effectively pinned to it.
+        # NOTE: Kimi K2.5 thinking-mode rejects BOTH the specified form and
+        # the "required" literal ("tool_choice 'required' is incompatible
+        # with thinking enabled"). We default MODEL_ID to a non-thinking
+        # variant (kimi-k2-turbo-preview) where "required" works; other
+        # OpenAI-compatible providers also accept it.
         tool_choice="required",
     )
 
