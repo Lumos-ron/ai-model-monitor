@@ -25,7 +25,7 @@ jobs:
 
       - name: Refresh model data
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MIMO_API_KEY: ${{ secrets.MIMO_API_KEY }}
         run: python scripts/update_models.py
 
       - name: Commit if changed

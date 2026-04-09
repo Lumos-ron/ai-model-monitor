@@ -1,10 +1,10 @@
 """
 LLM-based structured extractor.
 
-Given raw HTML from a vendor page, ask Claude to return a single JSON
-object matching VENDOR_SCHEMA. Using an LLM rather than CSS selectors
-makes the extractor robust to site redesigns — we only need URLs to
-stay roughly valid.
+Given raw HTML from a vendor page, ask Xiaomi MiMo (via its OpenAI-compatible
+API) to return a single JSON object matching VENDOR_SCHEMA. Using an LLM
+rather than CSS selectors keeps the extractor robust against site redesigns —
+we only need URLs to stay roughly valid.
 """
 
 from __future__ import annotations
@@ -14,9 +14,10 @@ import os
 import re
 from typing import Any
 
-import anthropic
+from openai import OpenAI
 
-MODEL_ID = "claude-opus-4-6"
+MODEL_ID = os.environ.get("MIMO_MODEL", "mimo-v2-pro")
+BASE_URL = os.environ.get("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1")
 MAX_HTML_CHARS = 60_000
 
 VENDOR_SCHEMA = {
@@ -58,6 +59,7 @@ LEADERBOARD_SCHEMA = {
 
 _HTML_TAG_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.DOTALL | re.IGNORECASE)
 _WS_RE = re.compile(r"\s+")
+_JSON_BLOCK_RE = re.compile(r"\{[\s\S]*\}")
 
 
 def _clean_html(html: str) -> str:
@@ -67,34 +69,69 @@ def _clean_html(html: str) -> str:
     return cleaned.strip()[:MAX_HTML_CHARS]
 
 
-def _client() -> anthropic.Anthropic:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+def _client() -> OpenAI:
+    api_key = os.environ.get("MIMO_API_KEY")
     if not api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY environment variable is not set")
-    return anthropic.Anthropic(api_key=api_key)
+        raise RuntimeError("MIMO_API_KEY environment variable is not set")
+    return OpenAI(api_key=api_key, base_url=BASE_URL)
+
+
+def _parse_arguments(raw: str) -> dict[str, Any]:
+    """tool_calls[*].function.arguments is a JSON string in the OpenAI spec."""
+    raw = (raw or "").strip()
+    if not raw:
+        raise ValueError("empty tool-call arguments")
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Some providers wrap JSON in prose; salvage the first {...} block.
+        m = _JSON_BLOCK_RE.search(raw)
+        if not m:
+            raise
+        return json.loads(m.group(0))
 
 
 def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -> dict[str, Any]:
-    """Force a structured response via a single-tool tool_use."""
+    """Force a structured response via OpenAI-style function calling."""
     client = _client()
-    resp = client.messages.create(
+    resp = client.chat.completions.create(
         model=MODEL_ID,
         max_tokens=4096,
-        system=system,
+        temperature=0.2,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
         tools=[
             {
-                "name": tool_name,
-                "description": "Return the extracted structured data.",
-                "input_schema": schema,
+                "type": "function",
+                "function": {
+                    "name": tool_name,
+                    "description": "Return the extracted structured data.",
+                    "parameters": schema,
+                },
             }
         ],
-        tool_choice={"type": "tool", "name": tool_name},
-        messages=[{"role": "user", "content": user}],
+        tool_choice={"type": "function", "function": {"name": tool_name}},
     )
-    for block in resp.content:
-        if block.type == "tool_use" and block.name == tool_name:
-            return block.input  # type: ignore[return-value]
-    raise RuntimeError(f"Model did not call tool {tool_name!r}; got: {resp.content!r}")
+
+    msg = resp.choices[0].message
+    tool_calls = getattr(msg, "tool_calls", None) or []
+    for tc in tool_calls:
+        if tc.function and tc.function.name == tool_name:
+            return _parse_arguments(tc.function.arguments)
+
+    # Fallback: model ignored the tool_choice and returned plain content.
+    content = (msg.content or "").strip()
+    if content:
+        try:
+            return _parse_arguments(content)
+        except Exception as exc:  # noqa: BLE001
+            raise RuntimeError(
+                f"Model did not call tool {tool_name!r} and content was not JSON: {exc}"
+            ) from exc
+
+    raise RuntimeError(f"Model did not call tool {tool_name!r} and returned no content")
 
 
 def extract_vendor(vendor_id: str, flagship_hint: str, html_blobs: list[tuple[str, str]]) -> dict[str, Any]:
@@ -115,7 +152,8 @@ def extract_vendor(vendor_id: str, flagship_hint: str, html_blobs: list[tuple[st
         "You must only report a model that is officially released (not 'coming soon' or teased). "
         "If multiple models are listed, pick the newest and most capable one matching the flagship hint. "
         "Only include benchmark scores that are explicitly stated on the pages provided. "
-        "Do not invent or estimate numbers. If no score is clearly stated, return an empty list."
+        "Do not invent or estimate numbers. If no score is clearly stated, return an empty list. "
+        "You MUST call the provided tool to return the result."
     )
 
     user = (
@@ -139,7 +177,8 @@ def extract_leaderboard(leaderboard_name: str, model_names: list[str], html: str
         "For each model name in the input list, find the best matching row on the leaderboard "
         "(fuzzy match on display name / version suffix is OK). "
         "Return a mapping from the input model name (verbatim) to the numeric score shown. "
-        "If a model is not on the leaderboard, omit it. Never fabricate scores."
+        "If a model is not on the leaderboard, omit it. Never fabricate scores. "
+        "You MUST call the provided tool to return the result."
     )
     user = (
         f"Leaderboard: {leaderboard_name}\n"

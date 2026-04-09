@@ -15,7 +15,7 @@ GitHub Actions (daily cron)
 scripts/update_models.py
         │  fetch vendor blogs / model docs / leaderboards
         ▼
-Claude API (claude-opus-4-6)  ← structured extraction via tool_use
+Xiaomi MiMo API (mimo-v2-pro, OpenAI-compatible)  ← structured extraction via function calling
         │
         ▼
 data/models.json  ──git commit──▶  main branch  ──▶  Vercel 自动重部署
@@ -25,7 +25,7 @@ data/models.json  ──git commit──▶  main branch  ──▶  Vercel 自�
 ```
 
 - **前端**: 纯 vanilla HTML/CSS/JS，读取 `data/models.json` 渲染卡片
-- **抓取**: Python 脚本 fetch 原始 HTML，交给 Claude API 做结构化抽取 (`tool_use` 强约束 JSON schema)
+- **抓取**: Python 脚本 fetch 原始 HTML，通过 OpenAI SDK 调用小米 MiMo API (`mimo-v2-pro`) 做结构化抽取（function calling 强约束 JSON schema）
 - **更新触发**: GitHub Actions 每日 02:00 UTC 运行，有变动则 commit 到 `main`
 
 ## 本地开发 Local development
@@ -35,8 +35,11 @@ data/models.json  ──git commit──▶  main branch  ──▶  Vercel 自�
 python3 -m http.server 8000
 open http://localhost:8000
 
-# 运行抓取脚本 (需要 ANTHROPIC_API_KEY)
-export ANTHROPIC_API_KEY=sk-ant-...
+# 运行抓取脚本 (需要 MIMO_API_KEY)
+export MIMO_API_KEY=...          # 从 https://platform.xiaomimimo.com 获取
+# 可选：切换模型或 base_url
+# export MIMO_MODEL=mimo-v2-pro
+# export MIMO_BASE_URL=https://api.xiaomimimo.com/v1
 pip install -r scripts/requirements.txt
 python scripts/update_models.py
 ```
@@ -44,7 +47,7 @@ python scripts/update_models.py
 ## 部署 Deployment
 
 1. Push 仓库到 GitHub
-2. GitHub → Settings → Secrets and variables → Actions → 新建 `ANTHROPIC_API_KEY`
+2. GitHub → Settings → Secrets and variables → Actions → 新建 `MIMO_API_KEY`
 3. 在 [Vercel](https://vercel.com/) import 该仓库
    - Framework preset: **Other**
    - Build command: 留空
