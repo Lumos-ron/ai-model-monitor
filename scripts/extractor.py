@@ -81,6 +81,32 @@ LEADERBOARD_SCHEMA = {
     "additionalProperties": {"type": "number"},
 }
 
+AA_SCORES_SCHEMA = {
+    "type": "object",
+    "description": (
+        "Mapping from input model name (verbatim) to its benchmark scores as shown on the "
+        "Artificial Analysis models page. Omit models not found on the page. Omit individual "
+        "fields that are not shown for a given model — never emit null values."
+    ),
+    "additionalProperties": {
+        "type": "object",
+        "properties": {
+            "intelligence_index": {
+                "type": "number",
+                "description": "AA Intelligence Index — composite score, typically 0-100.",
+            },
+            "mmlu_pro": {"type": "number", "description": "MMLU-Pro score as shown, percentage 0-100."},
+            "gpqa_diamond": {"type": "number", "description": "GPQA Diamond score as shown, percentage 0-100."},
+            "humanitys_last_exam": {"type": "number", "description": "Humanity's Last Exam score as shown, percentage 0-100."},
+            "livecodebench": {"type": "number", "description": "LiveCodeBench score as shown, percentage 0-100."},
+            "scicode": {"type": "number", "description": "SciCode score as shown, percentage 0-100."},
+            "math_500": {"type": "number", "description": "MATH-500 score as shown, percentage 0-100."},
+            "aime": {"type": "number", "description": "AIME score as shown, percentage 0-100."},
+            "ifbench": {"type": "number", "description": "IFBench score as shown, percentage 0-100."},
+        },
+    },
+}
+
 
 # ---------------- helpers ----------------
 
@@ -89,10 +115,11 @@ _WS_RE = re.compile(r"\s+")
 _JSON_BLOCK_RE = re.compile(r"\{[\s\S]*\}")
 
 
-def _clean(text: str) -> str:
+def _clean(text: str, max_chars: int | None = None) -> str:
+    limit = max_chars if max_chars is not None else MAX_HTML_CHARS
     cleaned = _HTML_TAG_RE.sub(" ", text)
     cleaned = _WS_RE.sub(" ", cleaned)
-    return cleaned.strip()[:MAX_HTML_CHARS]
+    return cleaned.strip()[:limit]
 
 
 def _client() -> OpenAI:
@@ -227,6 +254,43 @@ def extract_benchmarks(
 
 
 # ---------------- leaderboards ----------------
+
+def extract_aa_scores(
+    model_names: list[str],
+    html: str,
+) -> dict[str, dict[str, Any]]:
+    """Pull per-model benchmark scores from the Artificial Analysis models page.
+
+    AA aggregates normalised benchmark results across every major vendor
+    (OpenAI / Anthropic / Google / DeepSeek / Zhipu / Xiaomi / MiniMax), so a
+    single fetch + single LLM call covers all 7 vendors. The AA page is larger
+    than a blog post, so we give it a bigger character budget than the
+    global default.
+    """
+    # AA's models page has a big table — give it more room than the default.
+    cleaned = _clean(html, max_chars=max(MAX_HTML_CHARS, 80000))
+    system = (
+        "You extract benchmark scores from the Artificial Analysis models page "
+        "(artificialanalysis.ai/models), which aggregates standardised benchmark "
+        "results for every major AI model. "
+        "For each model name in the input list, find the best matching row on the "
+        "page (fuzzy match on version suffix is OK) and return the numeric scores "
+        "shown there. "
+        "Rules: "
+        "(1) Return the number exactly as shown. If the page shows '87%' return 87, not 0.87. "
+        "(2) If a model is not on the page, omit its key entirely — never return null. "
+        "(3) If a specific metric is missing for a model, omit that field — never return null. "
+        "(4) Never fabricate scores; if uncertain, omit. "
+        "(5) Numbers must be numbers, not strings. "
+        "(6) You MUST call the `report_aa_scores` tool."
+    )
+    user = (
+        f"Models to look up: {json.dumps(model_names, ensure_ascii=False)}\n\n"
+        f"Artificial Analysis page content:\n{cleaned}\n\n"
+        "Call the `report_aa_scores` tool."
+    )
+    return _call_tool(system, user, AA_SCORES_SCHEMA, "report_aa_scores")  # type: ignore[return-value]
+
 
 def extract_leaderboard(leaderboard_name: str, model_names: list[str], html: str) -> dict[str, float]:
     cleaned = _clean(html)

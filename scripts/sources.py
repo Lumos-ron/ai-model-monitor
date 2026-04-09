@@ -119,6 +119,13 @@ class Leaderboard:
     score_field: str
 
 
+# Artificial Analysis is the primary benchmark source (handled directly
+# in the benchmark phase, not as a generic leaderboard) because it
+# aggregates normalised per-model scores for MMLU-Pro / GPQA / HLE /
+# LiveCodeBench / MATH / AIME / IFBench across every major vendor.
+AA_MODELS_URL = "https://artificialanalysis.ai/models"
+
+
 LEADERBOARDS: List[Leaderboard] = [
     Leaderboard(
         id="lmarena",
@@ -131,11 +138,5 @@ LEADERBOARDS: List[Leaderboard] = [
         name="LiveBench",
         url="https://livebench.ai/",
         score_field="livebench_avg",
-    ),
-    Leaderboard(
-        id="artificial_analysis",
-        name="Artificial Analysis",
-        url="https://artificialanalysis.ai/models",
-        score_field="aa_intelligence_index",
     ),
 ]

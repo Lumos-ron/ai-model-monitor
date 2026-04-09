@@ -31,8 +31,8 @@ from urllib.parse import urlparse
 
 import requests
 
-from extractor import discover_latest, extract_benchmarks, extract_leaderboard
-from sources import LEADERBOARDS, VENDORS, Vendor
+from extractor import discover_latest, extract_aa_scores, extract_benchmarks, extract_leaderboard
+from sources import AA_MODELS_URL, LEADERBOARDS, VENDORS, Vendor
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "data" / "models.json"
@@ -137,12 +137,33 @@ def _is_http_url(candidate: str) -> bool:
     return p.scheme in ("http", "https") and bool(p.netloc)
 
 
-# ---------------- vendor update (two-phase) ----------------
+# ---------------- vendor discovery (phase A) ----------------
 
-def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
+# AA keys → (benchmark display name, unit) for official_scores rendering.
+# Order here is the order benchmarks appear on the card.
+AA_METRIC_LABELS: list[tuple[str, str, str]] = [
+    ("mmlu_pro", "MMLU-Pro", "%"),
+    ("gpqa_diamond", "GPQA Diamond", "%"),
+    ("humanitys_last_exam", "Humanity's Last Exam", "%"),
+    ("livecodebench", "LiveCodeBench", "%"),
+    ("scicode", "SciCode", "%"),
+    ("math_500", "MATH-500", "%"),
+    ("aime", "AIME", "%"),
+    ("ifbench", "IFBench", "%"),
+]
+
+
+def discover_vendor(
+    vendor: Vendor, prev: dict[str, Any]
+) -> tuple[dict[str, Any], list[str]]:
+    """Phase A: fetch vendor seed pages and identify the flagship model.
+
+    Returns (vendor_block_with_empty_official_scores, candidate_announcement_urls).
+    The candidate URLs are stashed for the phase C fallback — they are only
+    walked if Artificial Analysis doesn't have the model.
+    """
     prev_block = previous_vendor(prev, vendor.id) or empty_vendor_block(vendor)
 
-    # Phase 0: fetch seed pages
     html_blobs: list[tuple[str, str]] = []
     fetch_errors: list[str] = []
     for url in vendor.urls:
@@ -155,9 +176,9 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
         block = copy.deepcopy(prev_block)
         block["fetch_status"] = "error"
         block["fetch_error"] = "; ".join(fetch_errors) or "no sources fetched"
-        return block
+        block["third_party_scores"] = _sanitize_third_party(block.get("third_party_scores"))
+        return block, []
 
-    # Phase 1: discover flagship model + candidate announcement URLs
     try:
         discovery = discover_latest(vendor.id, vendor.flagship_hint, html_blobs)
     except Exception as exc:  # noqa: BLE001
@@ -166,7 +187,8 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
         block = copy.deepcopy(prev_block)
         block["fetch_status"] = "error"
         block["fetch_error"] = f"discover: {exc}"
-        return block
+        block["third_party_scores"] = _sanitize_third_party(block.get("third_party_scores"))
+        return block, []
 
     display_name = (discovery.get("display_name") or "").strip()
     release_date = (discovery.get("release_date") or "").strip()
@@ -176,39 +198,14 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
         if isinstance(u, str) and _is_http_url(u)
     ]
 
-    # Phase 2: walk candidate URLs, first one that yields scores wins.
-    official_scores: list[dict[str, Any]] = []
-    source_url = candidate_urls[0] if candidate_urls else (html_blobs[0][0])
-    phase2_notes: list[str] = []
-
-    for cand in candidate_urls:
-        try:
-            article_html = fetch(cand)
-        except Exception as exc:  # noqa: BLE001
-            phase2_notes.append(f"fetch {cand}: {exc}")
-            continue
-        try:
-            result = extract_benchmarks(vendor.id, display_name, article_html, cand)
-        except Exception as exc:  # noqa: BLE001
-            phase2_notes.append(f"extract {cand}: {exc}")
-            continue
-        scores = result.get("official_scores") or []
-        if scores:
-            official_scores = scores
-            source_url = cand
-            if not release_date:
-                release_date = (result.get("release_date") or "").strip()
-            break
-        else:
-            phase2_notes.append(f"{cand}: no scores found")
-
     if not display_name:
-        # Discovery succeeded structurally but produced nothing useful.
         block = copy.deepcopy(prev_block)
         block["fetch_status"] = "error"
         block["fetch_error"] = "discovery returned empty display_name"
-        return block
+        block["third_party_scores"] = _sanitize_third_party(block.get("third_party_scores"))
+        return block, []
 
+    source_url = candidate_urls[0] if candidate_urls else html_blobs[0][0]
     block = {
         "id": vendor.id,
         "name_zh": vendor.name_zh,
@@ -220,15 +217,114 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
             "release_date": release_date,
             "source_url": source_url,
         },
-        "official_scores": official_scores,
-        # carry over previous third-party scores (sanitized — drop any
-        # stale nulls or stringified numbers left over from earlier
-        # runs). Will be refreshed below if the leaderboard pass works.
+        "official_scores": [],
         "third_party_scores": _sanitize_third_party(prev_block.get("third_party_scores")),
         "fetch_status": "ok",
-        "fetch_error": None if official_scores else ("no benchmarks found: " + "; ".join(phase2_notes) if phase2_notes else None),
+        "fetch_error": None,
     }
-    return block
+    return block, candidate_urls
+
+
+# ---------------- AA benchmark pass (phase B) ----------------
+
+def aa_metrics_to_official_scores(metrics: dict[str, Any]) -> list[dict[str, Any]]:
+    """Turn an AA per-model metrics dict into the official_scores list shape
+    consumed by the frontend. Drops missing / unparseable fields."""
+    out: list[dict[str, Any]] = []
+    for key, label, unit in AA_METRIC_LABELS:
+        num = _coerce_score(metrics.get(key))
+        if num is None:
+            continue
+        out.append({"benchmark": label, "score": num, "unit": unit})
+    return out
+
+
+def apply_aa_scores(vendor_blocks: list[dict[str, Any]]) -> set[str]:
+    """Phase B: fetch Artificial Analysis once and populate official_scores
+    (plus aa_intelligence_index) for every vendor it covers.
+
+    Returns the set of vendor ids whose official_scores were filled, so the
+    caller can skip the per-vendor fallback for them.
+    """
+    filled: set[str] = set()
+    display_names = [
+        vb["latest_model"]["display_name"]
+        for vb in vendor_blocks
+        if vb["latest_model"].get("display_name")
+    ]
+    if not display_names:
+        return filled
+
+    print("Fetching Artificial Analysis benchmarks…", file=sys.stderr)
+    try:
+        aa_html = fetch(AA_MODELS_URL)
+        aa_data = extract_aa_scores(display_names, aa_html)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[AA] failed: {exc}", file=sys.stderr)
+        return filled
+
+    if not isinstance(aa_data, dict):
+        print(f"[AA] unexpected response type {type(aa_data)}", file=sys.stderr)
+        return filled
+
+    for vb in vendor_blocks:
+        name = vb["latest_model"].get("display_name")
+        if not name:
+            continue
+        metrics = aa_data.get(name)
+        if not isinstance(metrics, dict):
+            continue
+
+        scores = aa_metrics_to_official_scores(metrics)
+        if scores:
+            vb["official_scores"] = scores
+            vb["fetch_status"] = "ok"
+            vb["fetch_error"] = None
+            filled.add(vb["id"])
+
+        ii = _coerce_score(metrics.get("intelligence_index"))
+        if ii is not None:
+            vb["third_party_scores"]["aa_intelligence_index"] = ii
+
+    return filled
+
+
+# ---------------- fallback benchmarks (phase C) ----------------
+
+def fallback_benchmarks(block: dict[str, Any], candidate_urls: list[str]) -> None:
+    """Phase C: for vendors AA didn't cover, walk the discovery-produced
+    candidate announcement URLs and pull whatever benchmarks the article
+    explicitly lists. First URL that returns a non-empty score list wins."""
+    if not candidate_urls:
+        return
+
+    display_name = block["latest_model"]["display_name"]
+    vendor_id = block["id"]
+    notes: list[str] = []
+
+    for cand in candidate_urls:
+        try:
+            article_html = fetch(cand)
+        except Exception as exc:  # noqa: BLE001
+            notes.append(f"fetch {cand}: {exc}")
+            continue
+        try:
+            result = extract_benchmarks(vendor_id, display_name, article_html, cand)
+        except Exception as exc:  # noqa: BLE001
+            notes.append(f"extract {cand}: {exc}")
+            continue
+
+        scores = result.get("official_scores") or []
+        if scores:
+            block["official_scores"] = scores
+            block["latest_model"]["source_url"] = cand
+            if not block["latest_model"].get("release_date"):
+                block["latest_model"]["release_date"] = (result.get("release_date") or "").strip()
+            return
+        notes.append(f"{cand}: no scores found")
+
+    if notes and not block.get("fetch_error"):
+        block["fetch_error"] = "no benchmarks found: " + "; ".join(notes)
 
 
 # ---------------- leaderboards ----------------
@@ -305,16 +401,35 @@ def update_leaderboard_scores(vendor_blocks: list[dict[str, Any]]) -> None:
 def main() -> int:
     prev = load_previous()
     vendor_blocks: list[dict[str, Any]] = []
+    vendor_candidates: dict[str, list[str]] = {}
 
+    # Phase A: discover each vendor's flagship model
     for vendor in VENDORS:
-        print(f"[{vendor.id}] updating…", file=sys.stderr)
-        vendor_blocks.append(update_vendor(vendor, prev))
+        print(f"[{vendor.id}] discovering…", file=sys.stderr)
+        block, candidates = discover_vendor(vendor, prev)
+        vendor_blocks.append(block)
+        vendor_candidates[vendor.id] = candidates
 
+    # Phase B: pull benchmarks for every vendor from Artificial Analysis
+    # in a single call (normalised cross-vendor numbers).
+    filled = apply_aa_scores(vendor_blocks)
+
+    # Phase C: for any vendor AA didn't cover, fall back to the vendor's
+    # own announcement pages.
+    for vb in vendor_blocks:
+        if vb["id"] in filled or vb.get("fetch_status") == "error":
+            continue
+        if vb["official_scores"]:
+            continue
+        print(f"[{vb['id']}] AA miss — falling back to announcement pages…", file=sys.stderr)
+        fallback_benchmarks(vb, vendor_candidates.get(vb["id"], []))
+
+    # Phase D: other third-party leaderboards (LMArena, LiveBench)
     print("Updating third-party leaderboards…", file=sys.stderr)
     update_leaderboard_scores(vendor_blocks)
 
     # Final sanitize — covers error-path blocks that inherited stale
-    # third_party_scores via deepcopy without going through update_vendor.
+    # third_party_scores via deepcopy without going through a score pass.
     for vb in vendor_blocks:
         vb["third_party_scores"] = _sanitize_third_party(vb.get("third_party_scores"))
 
