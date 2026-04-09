@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T06:24:18Z",
+  "last_updated": "2026-04-09T06:32:27Z",
   "vendors": [
     {
       "id": "openai",
@@ -7,46 +7,42 @@
       "name_en": "OpenAI",
       "product": "ChatGPT",
       "latest_model": {
-        "id": "",
+        "id": "gpt-5.4",
         "display_name": "GPT-5.4",
-        "release_date": "2026-02-05",
-        "source_url": "https://openai.com/index/introducing-gpt-5-3-codex/"
+        "release_date": "",
+        "source_url": "https://openai.com/index/gpt-5-3-instant/"
       },
       "official_scores": [
         {
-          "benchmark": "SWE-Bench Pro (Public)",
-          "score": 56.8,
+          "benchmark": "MMLU-Pro",
+          "score": 73.2,
           "unit": "%"
         },
         {
-          "benchmark": "Terminal-Bench 2.0",
-          "score": 77.3,
+          "benchmark": "GPQA Diamond",
+          "score": 54.1,
           "unit": "%"
         },
         {
-          "benchmark": "OSWorld-Verified",
-          "score": 64.7,
+          "benchmark": "SciCode",
+          "score": 49.2,
           "unit": "%"
         },
         {
-          "benchmark": "GDPval (wins or ties)",
-          "score": 70.9,
+          "benchmark": "MATH-500",
+          "score": 92.4,
           "unit": "%"
         },
         {
-          "benchmark": "Cybersecurity Capture The Flag Challenges",
-          "score": 77.6,
-          "unit": "%"
-        },
-        {
-          "benchmark": "SWE-Lancer IC Diamond",
-          "score": 81.4,
+          "benchmark": "AIME 2025",
+          "score": 1.0,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1382.0,
-        "livebench_avg": 74.8
+        "lmarena_elo": 1347.0,
+        "livebench_avg": 74.8,
+        "aa_intelligence_index": 86.2
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -59,30 +55,40 @@
       "latest_model": {
         "id": "",
         "display_name": "Claude Opus 4.6",
-        "release_date": "2026-02-05",
-        "source_url": "https://anthropic.com/news/claude-opus-4-6"
+        "release_date": "",
+        "source_url": "https://www.anthropic.com/news/claude-opus-4-6"
       },
       "official_scores": [
         {
-          "benchmark": "Terminal-Bench 2.0",
-          "score": 1
+          "benchmark": "MMLU-Pro",
+          "score": 77.3,
+          "unit": "%"
         },
         {
-          "benchmark": "Humanity's Last Exam",
-          "score": 1
+          "benchmark": "GPQA Diamond",
+          "score": 66.7,
+          "unit": "%"
         },
         {
-          "benchmark": "GDPval-AA",
-          "score": 144
+          "benchmark": "SciCode",
+          "score": 48.1,
+          "unit": "%"
         },
         {
-          "benchmark": "BrowseComp",
-          "score": 1
+          "benchmark": "MATH-500",
+          "score": 86.3,
+          "unit": "%"
+        },
+        {
+          "benchmark": "AIME 2025",
+          "score": 1.0,
+          "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1346.0,
-        "livebench_avg": 73.9
+        "lmarena_elo": 1389.0,
+        "livebench_avg": 73.9,
+        "aa_intelligence_index": 84.7
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -93,56 +99,41 @@
       "name_en": "Google",
       "product": "Gemini",
       "latest_model": {
-        "id": "",
-        "display_name": "Gemini 2.5 Pro",
+        "id": "gemini-3.1-pro-preview",
+        "display_name": "Gemini 3.1 Pro Preview",
         "release_date": "",
-        "source_url": "https://ai.google.dev/gemini-api/docs/models"
+        "source_url": "https://deepmind.google/models/gemini/"
       },
       "official_scores": [
         {
           "benchmark": "MMLU-Pro",
-          "score": 82.1,
+          "score": 75.6,
           "unit": "%"
         },
         {
           "benchmark": "GPQA Diamond",
-          "score": 65.2,
-          "unit": "%"
-        },
-        {
-          "benchmark": "Humanity's Last Exam",
-          "score": 45.8,
-          "unit": "%"
-        },
-        {
-          "benchmark": "LiveCodeBench",
-          "score": 68.4,
+          "score": 59.6,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 56.7,
+          "score": 47.5,
           "unit": "%"
         },
         {
           "benchmark": "MATH-500",
-          "score": 87.3,
+          "score": 91.7,
           "unit": "%"
         },
         {
-          "benchmark": "AIME",
-          "score": 72.5,
-          "unit": "%"
-        },
-        {
-          "benchmark": "IFBench",
-          "score": 78.9,
+          "benchmark": "AIME 2025",
+          "score": 1.0,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1337.0,
-        "aa_intelligence_index": 84.0,
+        "lmarena_elo": 1332.0,
+        "aa_intelligence_index": 83.1,
         "livebench_avg": 72.5
       },
       "fetch_status": "ok",
@@ -155,18 +146,59 @@
       "product": "DeepSeek Chat",
       "latest_model": {
         "id": "",
-        "display_name": "DeepSeek-V3",
-        "release_date": "2024-12-26",
-        "source_url": "https://github.com/deepseek-ai/DeepSeek-V3"
+        "display_name": "DeepSeek-R1",
+        "release_date": "",
+        "source_url": "https://github.com/deepseek-ai/DeepSeek-R1"
       },
-      "official_scores": [],
+      "official_scores": [
+        {
+          "benchmark": "MMLU-Pro",
+          "score": 74.1,
+          "unit": "%"
+        },
+        {
+          "benchmark": "GPQA Diamond",
+          "score": 71.0,
+          "unit": "%"
+        },
+        {
+          "benchmark": "Humanity's Last Exam",
+          "score": 8.3,
+          "unit": "%"
+        },
+        {
+          "benchmark": "LiveCodeBench",
+          "score": 39.2,
+          "unit": "%"
+        },
+        {
+          "benchmark": "SciCode",
+          "score": 46.8,
+          "unit": "%"
+        },
+        {
+          "benchmark": "MATH-500",
+          "score": 88.1,
+          "unit": "%"
+        },
+        {
+          "benchmark": "AIME 2025",
+          "score": 1.0,
+          "unit": "%"
+        },
+        {
+          "benchmark": "IFBench",
+          "score": 63.6,
+          "unit": "%"
+        }
+      ],
       "third_party_scores": {
         "lmarena_elo": 1305.0,
-        "aa_intelligence_index": 79.0,
+        "aa_intelligence_index": 81.9,
         "livebench_avg": 70.2
       },
       "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://github.com/deepseek-ai/DeepSeek-V3: no scores found"
+      "fetch_error": null
     },
     {
       "id": "zhipu",
@@ -179,14 +211,40 @@
         "release_date": "",
         "source_url": "https://open.bigmodel.cn/dev/howuse/model"
       },
-      "official_scores": [],
+      "official_scores": [
+        {
+          "benchmark": "MMLU-Pro",
+          "score": 72.5,
+          "unit": "%"
+        },
+        {
+          "benchmark": "GPQA Diamond",
+          "score": 48.5,
+          "unit": "%"
+        },
+        {
+          "benchmark": "SciCode",
+          "score": 45.9,
+          "unit": "%"
+        },
+        {
+          "benchmark": "MATH-500",
+          "score": 84.9,
+          "unit": "%"
+        },
+        {
+          "benchmark": "AIME 2025",
+          "score": 1.0,
+          "unit": "%"
+        }
+      ],
       "third_party_scores": {
         "lmarena_elo": 1290.0,
-        "aa_intelligence_index": 77.0,
+        "aa_intelligence_index": 79.3,
         "livebench_avg": 68.1
       },
       "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://open.bigmodel.cn/dev/howuse/model: no scores found"
+      "fetch_error": null
     },
     {
       "id": "xiaomi",
@@ -199,14 +257,45 @@
         "release_date": "",
         "source_url": "https://github.com/XiaomiMiMo/MiMo-V2-Flash"
       },
-      "official_scores": [],
+      "official_scores": [
+        {
+          "benchmark": "MMLU-Pro",
+          "score": 71.8,
+          "unit": "%"
+        },
+        {
+          "benchmark": "GPQA Diamond",
+          "score": 52.3,
+          "unit": "%"
+        },
+        {
+          "benchmark": "SciCode",
+          "score": 44.3,
+          "unit": "%"
+        },
+        {
+          "benchmark": "MATH-500",
+          "score": 78.2,
+          "unit": "%"
+        },
+        {
+          "benchmark": "AIME 2025",
+          "score": 1.0,
+          "unit": "%"
+        },
+        {
+          "benchmark": "IFBench",
+          "score": 65.5,
+          "unit": "%"
+        }
+      ],
       "third_party_scores": {
         "lmarena_elo": 1278.0,
-        "aa_intelligence_index": 73.0,
+        "aa_intelligence_index": 77.8,
         "livebench_avg": 66.4
       },
       "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://github.com/XiaomiMiMo/MiMo-V2-Flash: no scores found"
+      "fetch_error": null
     },
     {
       "id": "minimax",
@@ -217,16 +306,37 @@
         "id": "",
         "display_name": "MiniMax M2.7",
         "release_date": "",
-        "source_url": "https://www.minimaxi.com/news/minimax-m2-her-技术深度解析"
+        "source_url": "https://www.minimaxi.com/models/text/m27"
       },
-      "official_scores": [],
+      "official_scores": [
+        {
+          "benchmark": "MMLU-Pro",
+          "score": 70.4,
+          "unit": "%"
+        },
+        {
+          "benchmark": "SciCode",
+          "score": 43.7,
+          "unit": "%"
+        },
+        {
+          "benchmark": "MATH-500",
+          "score": 81.5,
+          "unit": "%"
+        },
+        {
+          "benchmark": "AIME 2025",
+          "score": 1.0,
+          "unit": "%"
+        }
+      ],
       "third_party_scores": {
         "lmarena_elo": 1256.0,
-        "aa_intelligence_index": 71.0,
+        "aa_intelligence_index": 76.4,
         "livebench_avg": 65.0
       },
       "fetch_status": "ok",
-      "fetch_error": "no benchmarks found: https://www.minimaxi.com/news/minimax-m2-her-技术深度解析: no scores found; https://www.minimaxi.com/news/minimax-m21: no scores found; https://www.minimaxi.com/news/minimax-m2: no scores found"
+      "fetch_error": null
     }
   ]
 }
