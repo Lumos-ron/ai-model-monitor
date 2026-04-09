@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T06:06:01Z",
+  "last_updated": "2026-04-09T06:10:54Z",
   "vendors": [
     {
       "id": "openai",
@@ -7,15 +7,17 @@
       "name_en": "OpenAI",
       "product": "ChatGPT",
       "latest_model": {
-        "id": "gpt-5.4",
+        "id": "",
         "display_name": "GPT-5.4",
         "release_date": "",
         "source_url": "https://platform.openai.com/api/docs/guides/latest-model"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "third_party_scores": {
+        "lmarena_elo": 1337.0
+      },
+      "fetch_status": "ok",
+      "fetch_error": "no benchmarks found: https://platform.openai.com/api/docs/guides/latest-model: no scores found"
     },
     {
       "id": "anthropic",
@@ -23,17 +25,38 @@
       "name_en": "Anthropic",
       "product": "Claude",
       "latest_model": {
-        "id": "claude-opus-4-6-20250205",
+        "id": "",
         "display_name": "Claude Opus 4.6",
         "release_date": "2026-02-05",
         "source_url": "https://www.anthropic.com/news/claude-opus-4-6"
       },
-      "official_scores": [],
+      "official_scores": [
+        {
+          "benchmark": "Terminal-Bench 2.0",
+          "score": 1,
+          "unit": ""
+        },
+        {
+          "benchmark": "Humanity's Last Exam",
+          "score": 1,
+          "unit": ""
+        },
+        {
+          "benchmark": "GDPval-AA",
+          "score": 144,
+          "unit": "Elo"
+        },
+        {
+          "benchmark": "BrowseComp",
+          "score": 1,
+          "unit": ""
+        }
+      ],
       "third_party_scores": {
-        "lmarena_elo": 1497.0
+        "lmarena_elo": 1362.0
       },
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "google",
@@ -41,17 +64,17 @@
       "name_en": "Google",
       "product": "Gemini",
       "latest_model": {
-        "id": "gemini-3.1-pro-preview",
-        "display_name": "Gemini 3.1 Pro",
+        "id": "gemini-2.5-pro",
+        "display_name": "Gemini 2.5 Pro",
         "release_date": "",
-        "source_url": "https://ai.google.dev/gemini-api/docs/models/gemini-3.1-pro-preview"
+        "source_url": "https://ai.google.dev/gemini-api/docs/models/gemini-2.5-pro"
       },
       "official_scores": [],
       "third_party_scores": {
-        "lmarena_elo": 1493.0
+        "lmarena_elo": 1349.0
       },
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_status": "ok",
+      "fetch_error": "no benchmarks found: https://ai.google.dev/gemini-api/docs/models/gemini-2.5-pro: no scores found"
     },
     {
       "id": "deepseek",
@@ -59,26 +82,18 @@
       "name_en": "DeepSeek",
       "product": "DeepSeek Chat",
       "latest_model": {
-        "id": "deepseek-chat",
-        "display_name": "DeepSeek-V3",
-        "release_date": "2024-12-26",
-        "source_url": "https://huggingface.co/deepseek-ai/DeepSeek-V3"
+        "id": "",
+        "display_name": "DeepSeek-R1",
+        "release_date": "",
+        "source_url": "https://github.com/deepseek-ai"
       },
-      "official_scores": [
-        {
-          "benchmark": "GSM8K",
-          "score": 89.3,
-          "unit": "%"
-        },
-        {
-          "benchmark": "MMLU-Pro",
-          "score": 64.4,
-          "unit": "%"
-        }
-      ],
-      "third_party_scores": {},
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "official_scores": [],
+      "third_party_scores": {
+        "lmarena_elo": 1358.0,
+        "aa_intelligence_index": 87.2
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "zhipu",
@@ -86,15 +101,17 @@
       "name_en": "Zhipu AI",
       "product": "GLM",
       "latest_model": {
-        "id": "glm-5.1",
-        "display_name": "GLM-5.1",
+        "id": "",
+        "display_name": "GLM-4.5",
         "release_date": "",
-        "source_url": "https://open.bigmodel.cn/cn/guide/start/migrate-to-glm-new"
+        "source_url": "https://open.bigmodel.cn/dev/howuse/model"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "third_party_scores": {
+        "lmarena_elo": 1287.0
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     },
     {
       "id": "xiaomi",
@@ -108,9 +125,11 @@
         "source_url": "https://github.com/XiaomiMiMo/MiMo"
       },
       "official_scores": [],
-      "third_party_scores": {},
+      "third_party_scores": {
+        "lmarena_elo": 1304.0
+      },
       "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "fetch_error": "discover: Error code: 429 - {'error': {'message': 'The engine is currently overloaded, please try again later', 'type': 'engine_overloaded_error'}}"
     },
     {
       "id": "minimax",
@@ -118,15 +137,17 @@
       "name_en": "MiniMax",
       "product": "abab / MiniMax-Text",
       "latest_model": {
-        "id": "MiniMax-M2.7",
+        "id": "",
         "display_name": "MiniMax M2.7",
         "release_date": "",
-        "source_url": "https://www.minimaxi.com/models/text/m27"
+        "source_url": "https://www.minimaxi.com/news"
       },
       "official_scores": [],
-      "third_party_scores": {},
-      "fetch_status": "error",
-      "fetch_error": "discover: Error code: 400 - {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}"
+      "third_party_scores": {
+        "lmarena_elo": 1295.0
+      },
+      "fetch_status": "ok",
+      "fetch_error": null
     }
   ]
 }
