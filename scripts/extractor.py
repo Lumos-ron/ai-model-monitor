@@ -117,10 +117,12 @@ def _parse_arguments(raw: str) -> dict[str, Any]:
 
 def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -> dict[str, Any]:
     client = _client()
+    # NOTE: no `temperature` override. Some providers (e.g. Kimi K2.5) reject
+    # any value other than 1; we rely on function-calling + strict schema
+    # for determinism instead of sampling parameters.
     resp = client.chat.completions.create(
         model=MODEL_ID,
         max_tokens=4096,
-        temperature=0.2,
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
