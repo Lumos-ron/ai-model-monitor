@@ -1,10 +1,17 @@
 """
 LLM-based structured extractor.
 
-Given raw HTML from a vendor page, ask Xiaomi MiMo (via its OpenAI-compatible
-API) to return a single JSON object matching VENDOR_SCHEMA. Using an LLM
-rather than CSS selectors keeps the extractor robust against site redesigns —
-we only need URLs to stay roughly valid.
+Talks to Xiaomi MiMo via its OpenAI-compatible API and uses
+OpenAI-style function calling (`tool_choice`) to force structured
+JSON output. Two-phase flow for vendor pages:
+
+    1. discover_latest   — given list/docs pages, identify the current
+                           flagship model name and up to 3 candidate
+                           URLs for the announcement article.
+    2. extract_benchmarks — given the fetched announcement article,
+                           pull the official benchmark numbers.
+
+Leaderboard pages still use a single-shot extraction.
 """
 
 from __future__ import annotations
@@ -20,51 +27,65 @@ MODEL_ID = os.environ.get("MIMO_MODEL", "mimo-v2-pro")
 BASE_URL = os.environ.get("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1")
 MAX_HTML_CHARS = 60_000
 
-VENDOR_SCHEMA = {
+# ---------------- JSON schemas ----------------
+
+DISCOVERY_SCHEMA = {
     "type": "object",
-    "required": ["latest_model", "official_scores"],
+    "required": ["display_name"],
     "properties": {
-        "latest_model": {
-            "type": "object",
-            "required": ["display_name"],
-            "properties": {
-                "id": {"type": "string", "description": "API model id if available"},
-                "display_name": {"type": "string", "description": "Marketing name, e.g. 'Claude Opus 4.6'"},
-                "release_date": {"type": "string", "description": "YYYY-MM-DD if known, else empty string"},
-                "source_url": {"type": "string"},
-            },
+        "display_name": {
+            "type": "string",
+            "description": "Marketing name of the current flagship model, including version suffix (e.g. 'GPT-5', 'Claude Opus 4.6', 'Gemini 3.1 Pro'). Never just a family name like 'MiMo'.",
         },
+        "id": {"type": "string", "description": "API model id if shown"},
+        "release_date": {"type": "string", "description": "YYYY-MM-DD if known, else ''"},
+        "announcement_urls": {
+            "type": "array",
+            "description": "Up to 3 URLs found on the provided pages that most likely link to the announcement/release/blog post for this specific model. Full URLs only.",
+            "items": {"type": "string"},
+            "maxItems": 3,
+        },
+    },
+}
+
+BENCHMARK_SCHEMA = {
+    "type": "object",
+    "required": ["official_scores"],
+    "properties": {
+        "release_date": {"type": "string"},
         "official_scores": {
             "type": "array",
-            "description": "Benchmark scores the vendor officially reports for this model",
+            "description": "Benchmark scores explicitly stated on the article for this model. Include at most 8 of the most recognised benchmarks (MMLU-Pro, GPQA Diamond, SWE-bench Verified, HumanEval, MATH, AIME, Arena Hard, etc.).",
             "items": {
                 "type": "object",
                 "required": ["benchmark", "score"],
                 "properties": {
-                    "benchmark": {"type": "string", "description": "e.g. 'MMLU-Pro', 'GPQA Diamond', 'SWE-bench Verified'"},
+                    "benchmark": {"type": "string"},
                     "score": {"type": "number"},
-                    "unit": {"type": "string", "description": "'%' or 'Elo' or '' for raw"},
+                    "unit": {"type": "string", "description": "'%' for percentages, else ''"},
                 },
             },
+            "maxItems": 8,
         },
     },
 }
 
 LEADERBOARD_SCHEMA = {
     "type": "object",
-    "description": "Mapping from normalised model display name to its score on this leaderboard",
+    "description": "Mapping from input model name to its numeric score. Omit entries for models not on the leaderboard. Never emit null values.",
     "additionalProperties": {"type": "number"},
 }
 
+
+# ---------------- helpers ----------------
 
 _HTML_TAG_RE = re.compile(r"<(script|style)[^>]*>.*?</\1>", re.DOTALL | re.IGNORECASE)
 _WS_RE = re.compile(r"\s+")
 _JSON_BLOCK_RE = re.compile(r"\{[\s\S]*\}")
 
 
-def _clean_html(html: str) -> str:
-    """Drop script/style blocks and collapse whitespace so the LLM sees signal."""
-    cleaned = _HTML_TAG_RE.sub(" ", html)
+def _clean(text: str) -> str:
+    cleaned = _HTML_TAG_RE.sub(" ", text)
     cleaned = _WS_RE.sub(" ", cleaned)
     return cleaned.strip()[:MAX_HTML_CHARS]
 
@@ -77,14 +98,12 @@ def _client() -> OpenAI:
 
 
 def _parse_arguments(raw: str) -> dict[str, Any]:
-    """tool_calls[*].function.arguments is a JSON string in the OpenAI spec."""
     raw = (raw or "").strip()
     if not raw:
         raise ValueError("empty tool-call arguments")
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        # Some providers wrap JSON in prose; salvage the first {...} block.
         m = _JSON_BLOCK_RE.search(raw)
         if not m:
             raise
@@ -92,7 +111,6 @@ def _parse_arguments(raw: str) -> dict[str, Any]:
 
 
 def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -> dict[str, Any]:
-    """Force a structured response via OpenAI-style function calling."""
     client = _client()
     resp = client.chat.completions.create(
         model=MODEL_ID,
@@ -121,7 +139,6 @@ def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -
         if tc.function and tc.function.name == tool_name:
             return _parse_arguments(tc.function.arguments)
 
-    # Fallback: model ignored the tool_choice and returned plain content.
     content = (msg.content or "").strip()
     if content:
         try:
@@ -134,51 +151,82 @@ def _call_tool(system: str, user: str, schema: dict[str, Any], tool_name: str) -
     raise RuntimeError(f"Model did not call tool {tool_name!r} and returned no content")
 
 
-def extract_vendor(vendor_id: str, flagship_hint: str, html_blobs: list[tuple[str, str]]) -> dict[str, Any]:
-    """
-    html_blobs: list of (source_url, raw_html) pairs, already fetched.
-    Returns a dict conforming to VENDOR_SCHEMA.
-    """
+# ---------------- phase 1: discover ----------------
+
+def discover_latest(
+    vendor_id: str,
+    flagship_hint: str,
+    html_blobs: list[tuple[str, str]],
+) -> dict[str, Any]:
+    """Identify the current flagship model and candidate announcement URLs."""
     if not html_blobs:
         raise RuntimeError("No HTML fetched for vendor")
 
     joined = "\n\n".join(
-        f"=== SOURCE: {url} ===\n{_clean_html(html)}"
+        f"=== SOURCE: {url} ===\n{_clean(html)}"
         for url, html in html_blobs
     )
 
     system = (
-        "You extract structured data about the latest flagship AI model released by a specific vendor. "
-        "You must only report a model that is officially released (not 'coming soon' or teased). "
-        "If multiple models are listed, pick the newest and most capable one matching the flagship hint. "
-        "Only include benchmark scores that are explicitly stated on the pages provided. "
-        "Do not invent or estimate numbers. If no score is clearly stated, return an empty list. "
-        "You MUST call the provided tool to return the result."
+        "You read an AI vendor's blog list / docs / GitHub page and identify the current flagship model. "
+        "Rules: "
+        "(1) Only pick a model that is officially released, not teased. "
+        "(2) If multiple versions are listed, pick the newest and most capable one matching the flagship hint. "
+        "(3) For announcement_urls, return up to 3 full URLs that appear on the provided pages and most likely "
+        "point to the release blog post / model card / technical report for THIS specific model. Do not make up URLs. "
+        "(4) You MUST call the `report_flagship` tool."
     )
-
     user = (
         f"Vendor: {vendor_id}\n"
         f"Flagship hint: {flagship_hint}\n\n"
-        f"Page content follows.\n\n{joined}\n\n"
-        "Call the `report_latest_model` tool with the result."
+        f"Pages:\n\n{joined}\n\n"
+        "Call the `report_flagship` tool."
     )
+    return _call_tool(system, user, DISCOVERY_SCHEMA, "report_flagship")
 
-    return _call_tool(system, user, VENDOR_SCHEMA, "report_latest_model")
 
+# ---------------- phase 2: benchmarks ----------------
+
+def extract_benchmarks(
+    vendor_id: str,
+    display_name: str,
+    article_html: str,
+    source_url: str,
+) -> dict[str, Any]:
+    """Pull official benchmark scores from a specific announcement article."""
+    cleaned = _clean(article_html)
+    system = (
+        "You extract benchmark scores from an AI model announcement/article. "
+        "Rules: "
+        "(1) Only include benchmarks that are explicitly stated in the article for the specified model. "
+        "(2) Do not invent, estimate, or carry over numbers from other models mentioned for comparison. "
+        "(3) Prefer the pass@1 / main reported number when multiple variants are shown. "
+        "(4) If no scores are clearly stated for this model, return an empty list. "
+        "(5) You MUST call the `report_benchmarks` tool."
+    )
+    user = (
+        f"Vendor: {vendor_id}\n"
+        f"Model: {display_name}\n"
+        f"Source URL: {source_url}\n\n"
+        f"Article content:\n{cleaned}\n\n"
+        "Call the `report_benchmarks` tool."
+    )
+    return _call_tool(system, user, BENCHMARK_SCHEMA, "report_benchmarks")
+
+
+# ---------------- leaderboards ----------------
 
 def extract_leaderboard(leaderboard_name: str, model_names: list[str], html: str) -> dict[str, float]:
-    """
-    Try to pull scores for the given model names from a leaderboard page's HTML.
-    Returns a dict: {display_name_from_our_list: score}.
-    """
-    cleaned = _clean_html(html)
+    cleaned = _clean(html)
     system = (
         "You extract scores from a public AI benchmark leaderboard page. "
-        "For each model name in the input list, find the best matching row on the leaderboard "
-        "(fuzzy match on display name / version suffix is OK). "
+        "For each model name in the input list, find the best matching row (fuzzy match on version suffix is OK). "
         "Return a mapping from the input model name (verbatim) to the numeric score shown. "
-        "If a model is not on the leaderboard, omit it. Never fabricate scores. "
-        "You MUST call the provided tool to return the result."
+        "Rules: "
+        "(1) If a model is not on the leaderboard, omit its key — never return null. "
+        "(2) The score must be a number, not a string. "
+        "(3) Never fabricate scores. "
+        "(4) You MUST call the `report_scores` tool."
     )
     user = (
         f"Leaderboard: {leaderboard_name}\n"

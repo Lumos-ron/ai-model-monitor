@@ -87,10 +87,14 @@ VENDORS: List[Vendor] = [
         name_en="Xiaomi",
         product="MiMo",
         urls=[
-            "https://github.com/XiaomiMiMo/MiMo",
             "https://github.com/XiaomiMiMo",
+            "https://github.com/XiaomiMiMo/MiMo-V2-Flash",
         ],
-        flagship_hint="Latest Xiaomi MiMo open-source reasoning model.",
+        flagship_hint=(
+            "Latest Xiaomi MiMo flagship open-source model. "
+            "Prefer MiMo-V2-Pro > MiMo-V2-Omni > MiMo-V2-Flash > MiMo-V1. "
+            "Always include the version suffix in display_name (e.g. 'MiMo-V2-Flash'), never just 'MiMo'."
+        ),
     ),
     Vendor(
         id="minimax",

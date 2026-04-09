@@ -2,14 +2,20 @@
 """
 Orchestrator that refreshes data/models.json.
 
-Flow:
-    1. Load previous data (if any) as a fallback.
-    2. For each vendor, fetch configured URLs and ask Claude to extract
-       {latest_model, official_scores}. On failure, keep the previous
-       vendor block and mark fetch_status=error.
-    3. Fetch each third-party leaderboard once, ask Claude to pull the
-       score for each vendor's latest model.
-    4. Merge and write data/models.json.
+Flow per vendor:
+    1. Fetch the configured list/docs pages (with r.jina.ai fallback if
+       a source returns 401/403/429 — OpenAI is WAF'd from GH runners).
+    2. `discover_latest`: LLM picks the flagship model + up to 3
+       candidate announcement URLs.
+    3. For each candidate URL, fetch it and call `extract_benchmarks`.
+       Keep the first result that returns a non-empty official_scores
+       list. Fall back to empty scores if none succeeds.
+    4. Merge with previous vendor block; on any hard failure we keep
+       the previous data and mark fetch_status=error.
+
+Then a single pass over the third-party leaderboards fills
+third_party_scores for every vendor, with null filtering and
+string→number coercion.
 """
 
 from __future__ import annotations
@@ -21,11 +27,12 @@ import sys
 import traceback
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
-from extractor import extract_leaderboard, extract_vendor
-from sources import LEADERBOARDS, VENDORS, Leaderboard, Vendor
+from extractor import discover_latest, extract_benchmarks, extract_leaderboard
+from sources import LEADERBOARDS, VENDORS, Vendor
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "data" / "models.json"
@@ -35,13 +42,57 @@ USER_AGENT = (
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36"
 )
 FETCH_TIMEOUT = 30
+JINA_READER_PREFIX = "https://r.jina.ai/"
+WAF_STATUSES = {401, 403, 429, 503}
 
 
-def fetch(url: str) -> str:
-    resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=FETCH_TIMEOUT)
+# ---------------- fetching ----------------
+
+def _fetch_direct(url: str) -> str:
+    resp = requests.get(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+        timeout=FETCH_TIMEOUT,
+    )
     resp.raise_for_status()
     return resp.text
 
+
+def _fetch_via_reader(url: str) -> str:
+    """Route through r.jina.ai — a free HTML-to-markdown proxy that
+    uses a headless browser upstream, so it bypasses most WAFs and
+    returns clean text (fewer tokens for the extractor)."""
+    reader_url = JINA_READER_PREFIX + url
+    resp = requests.get(
+        reader_url,
+        headers={"User-Agent": USER_AGENT, "Accept": "text/plain"},
+        timeout=FETCH_TIMEOUT * 2,
+    )
+    resp.raise_for_status()
+    return resp.text
+
+
+def fetch(url: str) -> str:
+    """Direct fetch with automatic Jina reader fallback on WAF blocks."""
+    try:
+        return _fetch_direct(url)
+    except requests.HTTPError as exc:
+        status = exc.response.status_code if exc.response is not None else None
+        if status in WAF_STATUSES:
+            print(f"  direct fetch {url} → {status}, retrying via r.jina.ai", file=sys.stderr)
+            return _fetch_via_reader(url)
+        raise
+    except requests.RequestException as exc:
+        # Connection / SSL / timeout issues — one retry via reader.
+        print(f"  direct fetch {url} → {exc}, retrying via r.jina.ai", file=sys.stderr)
+        return _fetch_via_reader(url)
+
+
+# ---------------- data loading ----------------
 
 def load_previous() -> dict[str, Any]:
     if DATA_FILE.exists():
@@ -69,7 +120,7 @@ def empty_vendor_block(vendor: Vendor) -> dict[str, Any]:
             "id": "",
             "display_name": "",
             "release_date": "",
-            "source_url": "",
+            "source_url": vendor.urls[0] if vendor.urls else "",
         },
         "official_scores": [],
         "third_party_scores": {},
@@ -78,11 +129,22 @@ def empty_vendor_block(vendor: Vendor) -> dict[str, Any]:
     }
 
 
+def _is_http_url(candidate: str) -> bool:
+    try:
+        p = urlparse(candidate)
+    except ValueError:
+        return False
+    return p.scheme in ("http", "https") and bool(p.netloc)
+
+
+# ---------------- vendor update (two-phase) ----------------
+
 def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
     prev_block = previous_vendor(prev, vendor.id) or empty_vendor_block(vendor)
+
+    # Phase 0: fetch seed pages
     html_blobs: list[tuple[str, str]] = []
     fetch_errors: list[str] = []
-
     for url in vendor.urls:
         try:
             html_blobs.append((url, fetch(url)))
@@ -95,20 +157,57 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
         block["fetch_error"] = "; ".join(fetch_errors) or "no sources fetched"
         return block
 
+    # Phase 1: discover flagship model + candidate announcement URLs
     try:
-        extracted = extract_vendor(vendor.id, vendor.flagship_hint, html_blobs)
+        discovery = discover_latest(vendor.id, vendor.flagship_hint, html_blobs)
     except Exception as exc:  # noqa: BLE001
-        print(f"[{vendor.id}] extractor failed: {exc}", file=sys.stderr)
+        print(f"[{vendor.id}] discover failed: {exc}", file=sys.stderr)
         traceback.print_exc()
         block = copy.deepcopy(prev_block)
         block["fetch_status"] = "error"
-        block["fetch_error"] = f"extractor: {exc}"
+        block["fetch_error"] = f"discover: {exc}"
         return block
 
-    latest = extracted.get("latest_model") or {}
-    # If extractor did not pick a source_url, fall back to the first fetched URL.
-    if not latest.get("source_url"):
-        latest["source_url"] = html_blobs[0][0]
+    display_name = (discovery.get("display_name") or "").strip()
+    release_date = (discovery.get("release_date") or "").strip()
+    model_id = (discovery.get("id") or "").strip()
+    candidate_urls = [
+        u for u in (discovery.get("announcement_urls") or [])
+        if isinstance(u, str) and _is_http_url(u)
+    ]
+
+    # Phase 2: walk candidate URLs, first one that yields scores wins.
+    official_scores: list[dict[str, Any]] = []
+    source_url = candidate_urls[0] if candidate_urls else (html_blobs[0][0])
+    phase2_notes: list[str] = []
+
+    for cand in candidate_urls:
+        try:
+            article_html = fetch(cand)
+        except Exception as exc:  # noqa: BLE001
+            phase2_notes.append(f"fetch {cand}: {exc}")
+            continue
+        try:
+            result = extract_benchmarks(vendor.id, display_name, article_html, cand)
+        except Exception as exc:  # noqa: BLE001
+            phase2_notes.append(f"extract {cand}: {exc}")
+            continue
+        scores = result.get("official_scores") or []
+        if scores:
+            official_scores = scores
+            source_url = cand
+            if not release_date:
+                release_date = (result.get("release_date") or "").strip()
+            break
+        else:
+            phase2_notes.append(f"{cand}: no scores found")
+
+    if not display_name:
+        # Discovery succeeded structurally but produced nothing useful.
+        block = copy.deepcopy(prev_block)
+        block["fetch_status"] = "error"
+        block["fetch_error"] = "discovery returned empty display_name"
+        return block
 
     block = {
         "id": vendor.id,
@@ -116,23 +215,44 @@ def update_vendor(vendor: Vendor, prev: dict[str, Any]) -> dict[str, Any]:
         "name_en": vendor.name_en,
         "product": vendor.product,
         "latest_model": {
-            "id": latest.get("id", ""),
-            "display_name": latest.get("display_name", ""),
-            "release_date": latest.get("release_date", ""),
-            "source_url": latest.get("source_url", ""),
+            "id": model_id,
+            "display_name": display_name,
+            "release_date": release_date,
+            "source_url": source_url,
         },
-        "official_scores": extracted.get("official_scores", []) or [],
-        # third_party_scores populated in a later pass; carry over previous
-        # values for now so we never lose them if a leaderboard fetch fails.
+        "official_scores": official_scores,
+        # carry over previous third-party scores; they'll be refreshed
+        # below if the leaderboard pass succeeds.
         "third_party_scores": dict(prev_block.get("third_party_scores", {})),
         "fetch_status": "ok",
-        "fetch_error": None,
+        "fetch_error": None if official_scores else ("no benchmarks found: " + "; ".join(phase2_notes) if phase2_notes else None),
     }
     return block
 
 
+# ---------------- leaderboards ----------------
+
+def _coerce_score(raw: Any) -> float | None:
+    """MiMo occasionally returns numbers as strings or sneaks in null.
+    Normalise everything to a finite float or drop it."""
+    if raw is None:
+        return None
+    if isinstance(raw, bool):  # bool is a subclass of int — reject explicitly
+        return None
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    if isinstance(raw, str):
+        s = raw.strip().rstrip("%")
+        if not s:
+            return None
+        try:
+            return float(s)
+        except ValueError:
+            return None
+    return None
+
+
 def update_leaderboard_scores(vendor_blocks: list[dict[str, Any]]) -> None:
-    """Mutates vendor_blocks in place, filling third_party_scores."""
     model_names = [
         vb["latest_model"]["display_name"]
         for vb in vendor_blocks
@@ -149,13 +269,24 @@ def update_leaderboard_scores(vendor_blocks: list[dict[str, Any]]) -> None:
             print(f"[leaderboard:{lb.id}] failed: {exc}", file=sys.stderr)
             continue
 
+        if not isinstance(scores, dict):
+            print(f"[leaderboard:{lb.id}] unexpected response type {type(scores)}", file=sys.stderr)
+            continue
+
         for vb in vendor_blocks:
             name = vb["latest_model"].get("display_name")
-            if not name:
+            if not name or name not in scores:
                 continue
-            if name in scores:
-                vb["third_party_scores"][lb.score_field] = scores[name]
+            num = _coerce_score(scores[name])
+            if num is None:
+                # Drop any stale value for this field rather than leave
+                # a nonsense cached number.
+                vb["third_party_scores"].pop(lb.score_field, None)
+                continue
+            vb["third_party_scores"][lb.score_field] = num
 
+
+# ---------------- main ----------------
 
 def main() -> int:
     prev = load_previous()
