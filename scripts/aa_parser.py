@@ -184,3 +184,59 @@ def get_aa_scores() -> dict[str, dict[str, float]]:
     html = fetch_aa_models_html()
     payload = parse_flight_payload(html)
     return extract_model_scores(payload)
+
+
+# ---------------- flagship discovery ----------------
+
+_MODE_SUFFIX_RE = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def clean_display_name(aa_name: str) -> str:
+    """Strip the trailing `(mode)` annotation AA appends to most rows.
+
+    "GPT-5.4 (xhigh)" → "GPT-5.4"
+    "Claude Opus 4.6 (Adaptive Reasoning, Max Effort)" → "Claude Opus 4.6"
+    "Gemini 3.1 Pro Preview" → "Gemini 3.1 Pro Preview"   (no parens, unchanged)
+    """
+    return _MODE_SUFFIX_RE.sub("", aa_name).strip()
+
+
+def find_flagship(
+    prefix: str,
+    exclude_patterns: list[str],
+    aa_models: dict[str, dict[str, float]],
+) -> tuple[str, str] | None:
+    """Pick the vendor's flagship row directly from AA data.
+
+    Filter AA rows by `prefix` (case-insensitive startswith) and reject
+    any row matching one of `exclude_patterns`. Among survivors, rank
+    by intelligence_index descending — that's AA's own composite score
+    and correlates with what the vendor markets as flagship. Tie-break
+    on shorter name so plain "MiMo-V2-Pro" beats any longer alias.
+
+    Returns (display_name, raw_aa_name) where display_name has the mode
+    suffix stripped for UI use and raw_aa_name is the exact key that
+    `aa_models` can be indexed by. Returns None if nothing matches.
+    """
+    if not prefix:
+        return None
+    prefix_l = prefix.lower()
+    patterns = [re.compile(p, re.IGNORECASE) for p in exclude_patterns]
+
+    candidates: list[tuple[str, float]] = []
+    for name, scores in aa_models.items():
+        if not name.lower().startswith(prefix_l):
+            continue
+        if any(p.search(name) for p in patterns):
+            continue
+        idx = scores.get(AA_INDEX_FIELD)
+        if not isinstance(idx, (int, float)):
+            continue
+        candidates.append((name, float(idx)))
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda kv: (-kv[1], len(kv[0])))
+    raw = candidates[0][0]
+    return clean_display_name(raw), raw

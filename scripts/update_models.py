@@ -35,6 +35,7 @@ from aa_parser import (
     AA_FIELD_TO_LABEL,
     AA_INDEX_FIELD,
     best_variant,
+    find_flagship,
     get_aa_scores,
 )
 from extractor import discover_latest, extract_benchmarks, extract_leaderboard
@@ -145,14 +146,75 @@ def _is_http_url(candidate: str) -> bool:
 
 # ---------------- vendor discovery (phase A) ----------------
 
+def discover_via_aa(
+    vendor: Vendor, aa_models: dict[str, dict[str, float]], prev: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Phase A (preferred): identify the flagship directly from AA.
+
+    AA covers both open-weight and closed/API-only models, and its
+    intelligence_index tracks which variant of a family the vendor
+    currently treats as flagship. Using AA as the source of truth here
+    means GLM-5.1 (uploaded yesterday) and MiMo-V2-Pro (closed API,
+    not on HF/GitHub) both resolve correctly without any LLM guesses.
+
+    Returns a fully-populated vendor block — including official_scores
+    and third_party_scores["aa_intelligence_index"] — or None if no AA
+    row survives the vendor's filter, in which case the caller should
+    fall back to the LLM-based discovery path.
+    """
+    if not vendor.aa_prefix:
+        return None
+
+    match = find_flagship(vendor.aa_prefix, vendor.aa_exclude_patterns, aa_models)
+    if not match:
+        return None
+
+    display_name, raw_aa_name = match
+    scores_by_field = aa_models[raw_aa_name]
+
+    prev_block = previous_vendor(prev, vendor.id) or empty_vendor_block(vendor)
+    third_party = _sanitize_third_party(prev_block.get("third_party_scores"))
+
+    official: list[dict[str, Any]] = []
+    for field, label in AA_FIELD_TO_LABEL.items():
+        num = _coerce_score(scores_by_field.get(field))
+        if num is None:
+            continue
+        official.append({"benchmark": label, "score": num, "unit": "%"})
+
+    idx = _coerce_score(scores_by_field.get(AA_INDEX_FIELD))
+    if idx is not None:
+        third_party["aa_intelligence_index"] = idx
+
+    source_url = vendor.urls[0] if vendor.urls else ""
+
+    return {
+        "id": vendor.id,
+        "name_zh": vendor.name_zh,
+        "name_en": vendor.name_en,
+        "product": vendor.product,
+        "latest_model": {
+            "id": "",
+            "display_name": display_name,
+            "release_date": "",
+            "source_url": source_url,
+        },
+        "official_scores": official,
+        "third_party_scores": third_party,
+        "fetch_status": "ok",
+        "fetch_error": None,
+    }
+
+
 def discover_vendor(
     vendor: Vendor, prev: dict[str, Any]
 ) -> tuple[dict[str, Any], list[str]]:
-    """Phase A: fetch vendor seed pages and identify the flagship model.
+    """Phase A fallback: fetch vendor seed pages and ask the LLM to
+    identify the flagship model. Only used when `discover_via_aa` comes
+    up empty (e.g. a brand-new release AA hasn't evaluated yet).
 
     Returns (vendor_block_with_empty_official_scores, candidate_announcement_urls).
-    The candidate URLs are stashed for the phase C fallback — they are only
-    walked if Artificial Analysis doesn't have the model.
+    The candidate URLs are stashed for the phase C fallback.
     """
     prev_block = previous_vendor(prev, vendor.id) or empty_vendor_block(vendor)
 
@@ -219,40 +281,31 @@ def discover_vendor(
 
 # ---------------- AA benchmark pass (phase B) ----------------
 
-def apply_aa_benchmarks(vendor_blocks: list[dict[str, Any]]) -> set[str]:
-    """Phase B: pull per-benchmark scores + AA Intelligence Index from
-    Artificial Analysis's /models page in a single request.
+def apply_aa_benchmarks(
+    vendor_blocks: list[dict[str, Any]],
+    aa_models: dict[str, dict[str, float]],
+) -> set[str]:
+    """Phase B: backfill AA benchmarks for vendors that went through the
+    LLM discovery fallback (phase A missed them on AA). Fuzzy-matches
+    each vendor's LLM-discovered display_name to an AA row via
+    `best_variant` and fills `official_scores` + `aa_intelligence_index`.
 
-    AA is a Next.js App Router site whose RSC Flight payload embeds the
-    full scores table as inline JSON. `aa_parser` decodes that payload
-    with a regex — no headless browser, no LLM — and returns
-    {model_name: {field: score, ...}}. We then fuzzy-match each vendor's
-    discovered display_name to one of AA's variants (preferring the
-    reasoning mode with the highest intelligence_index).
+    Vendors whose phase A already succeeded via `discover_via_aa`
+    already have both fields populated and will be skipped here.
 
-    Scores go into `official_scores` in the canonical order given by
-    AA_FIELD_TO_LABEL; AA's `intelligence_index` is lifted directly into
-    `third_party_scores` as a bonus.
-
-    Returns the set of vendor ids that got at least one AA benchmark
-    score, so the caller can skip the per-vendor announcement-page
-    fallback for them.
+    Returns the set of vendor ids that ended up with at least one AA
+    benchmark score.
     """
     filled: set[str] = set()
-    try:
-        aa_models = get_aa_scores()
-    except Exception as exc:  # noqa: BLE001
-        print(f"[AA] fetch/parse failed: {exc}", file=sys.stderr)
-        traceback.print_exc()
-        return filled
-
     if not aa_models:
-        print("[AA] no models parsed from Flight payload", file=sys.stderr)
         return filled
-
-    print(f"[AA] parsed {len(aa_models)} models from flight payload", file=sys.stderr)
 
     for vb in vendor_blocks:
+        if vb.get("official_scores"):
+            # Phase A via AA already handled this vendor.
+            filled.add(vb["id"])
+            continue
+
         display_name = vb["latest_model"].get("display_name") or ""
         match_name = best_variant(display_name, aa_models)
         if not match_name:
@@ -264,8 +317,7 @@ def apply_aa_benchmarks(vendor_blocks: list[dict[str, Any]]) -> set[str]:
 
         official: list[dict[str, Any]] = []
         for field, label in AA_FIELD_TO_LABEL.items():
-            raw = match_scores.get(field)
-            num = _coerce_score(raw)
+            num = _coerce_score(match_scores.get(field))
             if num is None:
                 continue
             official.append({"benchmark": label, "score": num, "unit": "%"})
@@ -397,19 +449,41 @@ def main() -> int:
     vendor_blocks: list[dict[str, Any]] = []
     vendor_candidates: dict[str, list[str]] = {}
 
-    # Phase A: discover each vendor's flagship model
+    # Fetch AA once up front — used both for AA-first discovery and for
+    # the phase B benchmark backfill.
+    try:
+        aa_models = get_aa_scores()
+        print(f"[AA] parsed {len(aa_models)} models from flight payload", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[AA] fetch/parse failed: {exc}", file=sys.stderr)
+        traceback.print_exc()
+        aa_models = {}
+
+    # Phase A: try AA-based discovery first; fall back to LLM-based
+    # discovery (which fetches the vendor's own blog/docs) only when AA
+    # doesn't know about the vendor.
     for vendor in VENDORS:
-        print(f"[{vendor.id}] discovering…", file=sys.stderr)
-        block, candidates = discover_vendor(vendor, prev)
+        block: dict[str, Any] | None = None
+        if aa_models:
+            block = discover_via_aa(vendor, aa_models, prev)
+            if block:
+                display = block["latest_model"]["display_name"]
+                print(f"[{vendor.id}] AA discovery → {display!r}", file=sys.stderr)
+
+        if block is None:
+            print(f"[{vendor.id}] LLM discovery…", file=sys.stderr)
+            block, candidates = discover_vendor(vendor, prev)
+            vendor_candidates[vendor.id] = candidates
+        else:
+            vendor_candidates[vendor.id] = []
         vendor_blocks.append(block)
-        vendor_candidates[vendor.id] = candidates
 
-    # Phase B: pull per-benchmark scores for every vendor from the AA
-    # evaluation leaderboards (one page per benchmark).
-    filled = apply_aa_benchmarks(vendor_blocks)
+    # Phase B: backfill AA scores for any vendor that had to use LLM
+    # discovery but whose chosen model happens to be on AA.
+    filled = apply_aa_benchmarks(vendor_blocks, aa_models)
 
-    # Phase C: for any vendor AA didn't cover, fall back to the vendor's
-    # own announcement pages.
+    # Phase C: for any vendor AA didn't cover at all, fall back to the
+    # vendor's own announcement pages.
     for vb in vendor_blocks:
         if vb["id"] in filled or vb.get("fetch_status") == "error":
             continue

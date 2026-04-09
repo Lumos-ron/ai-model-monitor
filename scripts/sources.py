@@ -23,6 +23,20 @@ class Vendor:
     # Hint for the LLM extractor — describes what the vendor calls its
     # flagship line so it can disambiguate when the page lists many models.
     flagship_hint: str = ""
+    # ------------------------------------------------------------------
+    # AA-first discovery (preferred): pick this vendor's flagship directly
+    # from the Artificial Analysis /models list, using intelligence_index
+    # as the ranking signal. Falls back to LLM discovery only if no AA
+    # row survives the filter.
+    # ------------------------------------------------------------------
+    # AA row name must start with this (case-insensitive). e.g. "GPT-",
+    # "Claude", "GLM-", "MiMo".
+    aa_prefix: str = ""
+    # Regex patterns (case-insensitive) — if any match the AA row name,
+    # reject that row. Used to filter out cheaper siblings (nano/mini/
+    # flash/haiku), domain-specific variants (codex/vl/audio/ocr), and
+    # experimental builds (exp/preview-only) before ranking.
+    aa_exclude_patterns: List[str] = field(default_factory=list)
 
 
 VENDORS: List[Vendor] = [
@@ -36,6 +50,15 @@ VENDORS: List[Vendor] = [
             "https://platform.openai.com/docs/models",
         ],
         flagship_hint="Latest GPT flagship (e.g. GPT-5, GPT-4.5, o-series reasoning).",
+        aa_prefix="GPT-",
+        # Drop size siblings (nano/mini), coding-specific variants (Codex),
+        # and the non-reasoning ChatGPT consumer endpoint.
+        aa_exclude_patterns=[
+            r"\bnano\b",
+            r"\bmini\b",
+            r"\bcodex\b",
+            r"\(ChatGPT\)",
+        ],
     ),
     Vendor(
         id="anthropic",
@@ -47,6 +70,12 @@ VENDORS: List[Vendor] = [
             "https://docs.anthropic.com/en/docs/about-claude/models/overview",
         ],
         flagship_hint="Latest Claude flagship model (Opus / Sonnet tier).",
+        aa_prefix="Claude",
+        # Only Opus counts as flagship; drop Sonnet / Haiku tiers.
+        aa_exclude_patterns=[
+            r"\bSonnet\b",
+            r"\bHaiku\b",
+        ],
     ),
     Vendor(
         id="google",
@@ -63,6 +92,13 @@ VENDORS: List[Vendor] = [
             "Include preview releases if they are the newest (e.g. 'Gemini 3.1 Pro Preview'). "
             "Always include the version number in display_name."
         ),
+        aa_prefix="Gemini",
+        # Drop all sub-flagship size tiers.
+        aa_exclude_patterns=[
+            r"\bFlash\b",
+            r"\bNano\b",
+            r"\bLite\b",
+        ],
     ),
     Vendor(
         id="deepseek",
@@ -81,6 +117,15 @@ VENDORS: List[Vendor] = [
             "Always include the version suffix in display_name "
             "(e.g. 'DeepSeek V3.2', never just 'DeepSeek')."
         ),
+        aa_prefix="DeepSeek",
+        # Drop experimental builds and the "Speciale" research variant;
+        # distilled siblings are not the flagship.
+        aa_exclude_patterns=[
+            r"\bExp\b",
+            r"\bSpeciale\b",
+            r"\bDistill",
+            r"\bCoder\b",
+        ],
     ),
     Vendor(
         id="zhipu",
@@ -91,7 +136,21 @@ VENDORS: List[Vendor] = [
             "https://open.bigmodel.cn/dev/howuse/model",
             "https://github.com/THUDM",
         ],
-        flagship_hint="Latest GLM flagship (GLM-4 / GLM-4.5 tier).",
+        flagship_hint="Latest GLM flagship (GLM-5 / GLM-4.5 tier).",
+        aa_prefix="GLM-",
+        # Exclude vision ("GLM-4.5V"), lightweight ("Air"), turbo/flash
+        # variants, and modality-specific sibs (OCR/TTS/ASR/Image/Video).
+        aa_exclude_patterns=[
+            r"GLM-[\d.]+V\b",
+            r"\bAir\b",
+            r"\bTurbo\b",
+            r"\bFlash\b",
+            r"\bOCR\b",
+            r"\bTTS\b",
+            r"\bASR\b",
+            r"\bImage\b",
+            r"\bVideo\b",
+        ],
     ),
     Vendor(
         id="xiaomi",
@@ -103,10 +162,19 @@ VENDORS: List[Vendor] = [
             "https://github.com/XiaomiMiMo/MiMo-V2-Flash",
         ],
         flagship_hint=(
-            "Latest Xiaomi MiMo flagship open-source model. "
+            "Latest Xiaomi MiMo flagship model. "
             "Prefer MiMo-V2-Pro > MiMo-V2-Omni > MiMo-V2-Flash > MiMo-V1. "
-            "Always include the version suffix in display_name (e.g. 'MiMo-V2-Flash'), never just 'MiMo'."
+            "Always include the version suffix in display_name (e.g. 'MiMo-V2-Pro'), never just 'MiMo'."
         ),
+        aa_prefix="MiMo",
+        # Flash is mid-tier, VL/Audio/Embodied are modality sibs — strip
+        # them all so the Pro (closed API flagship) wins on intelligence.
+        aa_exclude_patterns=[
+            r"\bFlash\b",
+            r"\bVL\b",
+            r"\bAudio\b",
+            r"\bEmbodied\b",
+        ],
     ),
     Vendor(
         id="minimax",
@@ -118,6 +186,8 @@ VENDORS: List[Vendor] = [
             "https://platform.minimaxi.com/document/ChatCompletion%20v2",
         ],
         flagship_hint="Latest MiniMax flagship (abab / MiniMax-Text / M-series).",
+        aa_prefix="MiniMax",
+        aa_exclude_patterns=[],
     ),
 ]
 
