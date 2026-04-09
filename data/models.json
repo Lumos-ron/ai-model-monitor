@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-09T06:32:27Z",
+  "last_updated": "2026-04-09T06:48:35Z",
   "vendors": [
     {
       "id": "openai",
@@ -7,42 +7,32 @@
       "name_en": "OpenAI",
       "product": "ChatGPT",
       "latest_model": {
-        "id": "gpt-5.4",
+        "id": "",
         "display_name": "GPT-5.4",
         "release_date": "",
         "source_url": "https://openai.com/index/gpt-5-3-instant/"
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 73.2,
-          "unit": "%"
-        },
-        {
           "benchmark": "GPQA Diamond",
-          "score": 54.1,
+          "score": 92.0,
           "unit": "%"
         },
         {
-          "benchmark": "SciCode",
-          "score": 49.2,
+          "benchmark": "Humanity's Last Exam",
+          "score": 41.6,
           "unit": "%"
         },
         {
-          "benchmark": "MATH-500",
-          "score": 92.4,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "benchmark": "IFBench",
+          "score": 73.9,
           "unit": "%"
         }
       ],
       "third_party_scores": {
         "lmarena_elo": 1347.0,
         "livebench_avg": 74.8,
-        "aa_intelligence_index": 86.2
+        "aa_intelligence_index": 57.17
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -55,40 +45,35 @@
       "latest_model": {
         "id": "",
         "display_name": "Claude Opus 4.6",
-        "release_date": "",
+        "release_date": "2026-02-05",
         "source_url": "https://www.anthropic.com/news/claude-opus-4-6"
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 77.3,
+          "benchmark": "GPQA Diamond",
+          "score": 89.6,
           "unit": "%"
         },
         {
-          "benchmark": "GPQA Diamond",
-          "score": 66.7,
+          "benchmark": "Humanity's Last Exam",
+          "score": 36.7,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 48.1,
+          "score": 46.8,
           "unit": "%"
         },
         {
-          "benchmark": "MATH-500",
-          "score": 86.3,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "benchmark": "IFBench",
+          "score": 53.1,
           "unit": "%"
         }
       ],
       "third_party_scores": {
         "lmarena_elo": 1389.0,
         "livebench_avg": 73.9,
-        "aa_intelligence_index": 84.7
+        "aa_intelligence_index": 52.95
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -99,41 +84,36 @@
       "name_en": "Google",
       "product": "Gemini",
       "latest_model": {
-        "id": "gemini-3.1-pro-preview",
+        "id": "",
         "display_name": "Gemini 3.1 Pro Preview",
         "release_date": "",
         "source_url": "https://deepmind.google/models/gemini/"
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 75.6,
+          "benchmark": "GPQA Diamond",
+          "score": 94.1,
           "unit": "%"
         },
         {
-          "benchmark": "GPQA Diamond",
-          "score": 59.6,
+          "benchmark": "Humanity's Last Exam",
+          "score": 44.7,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 47.5,
+          "score": 40.0,
           "unit": "%"
         },
         {
-          "benchmark": "MATH-500",
-          "score": 91.7,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "benchmark": "IFBench",
+          "score": 77.1,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1332.0,
-        "aa_intelligence_index": 83.1,
+        "lmarena_elo": 1376.0,
+        "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
       "fetch_status": "ok",
@@ -145,56 +125,46 @@
       "name_en": "DeepSeek",
       "product": "DeepSeek Chat",
       "latest_model": {
-        "id": "",
-        "display_name": "DeepSeek-R1",
-        "release_date": "",
-        "source_url": "https://github.com/deepseek-ai/DeepSeek-R1"
+        "id": "deepseek-chat",
+        "display_name": "DeepSeek V3.2",
+        "release_date": "2025-12-01",
+        "source_url": "https://api-docs.deepseek.com/news/news251201"
       },
       "official_scores": [
         {
           "benchmark": "MMLU-Pro",
-          "score": 74.1,
+          "score": 86.2,
           "unit": "%"
         },
         {
           "benchmark": "GPQA Diamond",
-          "score": 71.0,
+          "score": 84.0,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 8.3,
+          "score": 22.2,
           "unit": "%"
         },
         {
           "benchmark": "LiveCodeBench",
-          "score": 39.2,
+          "score": 86.2,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 46.8,
-          "unit": "%"
-        },
-        {
-          "benchmark": "MATH-500",
-          "score": 88.1,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "score": 40.3,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 63.6,
+          "score": 60.7,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1305.0,
-        "aa_intelligence_index": 81.9,
+        "lmarena_elo": 1358.0,
+        "aa_intelligence_index": 41.71,
         "livebench_avg": 70.2
       },
       "fetch_status": "ok",
@@ -214,33 +184,48 @@
       "official_scores": [
         {
           "benchmark": "MMLU-Pro",
-          "score": 72.5,
+          "score": 83.5,
           "unit": "%"
         },
         {
           "benchmark": "GPQA Diamond",
-          "score": 48.5,
+          "score": 78.2,
+          "unit": "%"
+        },
+        {
+          "benchmark": "Humanity's Last Exam",
+          "score": 12.2,
+          "unit": "%"
+        },
+        {
+          "benchmark": "LiveCodeBench",
+          "score": 73.8,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 45.9,
+          "score": 38.4,
           "unit": "%"
         },
         {
           "benchmark": "MATH-500",
-          "score": 84.9,
+          "score": 97.9,
           "unit": "%"
         },
         {
           "benchmark": "AIME 2025",
-          "score": 1.0,
+          "score": 87.3,
+          "unit": "%"
+        },
+        {
+          "benchmark": "IFBench",
+          "score": 44.1,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1290.0,
-        "aa_intelligence_index": 79.3,
+        "lmarena_elo": 1332.0,
+        "aa_intelligence_index": 26.42,
         "livebench_avg": 68.1
       },
       "fetch_status": "ok",
@@ -259,39 +244,29 @@
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 71.8,
+          "benchmark": "GPQA Diamond",
+          "score": 83.5,
           "unit": "%"
         },
         {
-          "benchmark": "GPQA Diamond",
-          "score": 52.3,
+          "benchmark": "Humanity's Last Exam",
+          "score": 20.0,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 44.3,
-          "unit": "%"
-        },
-        {
-          "benchmark": "MATH-500",
-          "score": 78.2,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "score": 36.7,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 65.5,
+          "score": 71.8,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1278.0,
-        "aa_intelligence_index": 77.8,
+        "lmarena_elo": 1315.0,
+        "aa_intelligence_index": 41.46,
         "livebench_avg": 66.4
       },
       "fetch_status": "ok",
@@ -310,29 +285,29 @@
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 70.4,
+          "benchmark": "GPQA Diamond",
+          "score": 87.4,
+          "unit": "%"
+        },
+        {
+          "benchmark": "Humanity's Last Exam",
+          "score": 28.1,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 43.7,
+          "score": 26.9,
           "unit": "%"
         },
         {
-          "benchmark": "MATH-500",
-          "score": 81.5,
-          "unit": "%"
-        },
-        {
-          "benchmark": "AIME 2025",
-          "score": 1.0,
+          "benchmark": "IFBench",
+          "score": 75.7,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1256.0,
-        "aa_intelligence_index": 76.4,
+        "lmarena_elo": 1294.0,
+        "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
       "fetch_status": "ok",
