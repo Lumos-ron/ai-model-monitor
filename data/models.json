@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-11T04:19:59Z",
+  "last_updated": "2026-04-12T04:44:38Z",
   "vendors": [
     {
       "id": "openai",
@@ -76,7 +76,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1428.0,
+        "lmarena_elo": 1389.0,
         "livebench_avg": 73.9,
         "aa_intelligence_index": 52.95
       },
@@ -112,7 +112,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1408.0,
+        "lmarena_elo": 1332.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -163,7 +163,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1385.0,
+        "lmarena_elo": 1298.0,
         "aa_intelligence_index": 41.71,
         "livebench_avg": 70.2
       },
@@ -204,7 +204,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1329.0,
+        "lmarena_elo": 1268.0,
         "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
@@ -245,7 +245,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1355.0,
+        "lmarena_elo": 1307.0,
         "aa_intelligence_index": 49.2,
         "livebench_avg": 66.4
       },
@@ -286,7 +286,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1292.0,
+        "lmarena_elo": 1247.0,
         "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
