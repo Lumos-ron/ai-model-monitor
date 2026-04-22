@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-21T04:46:27Z",
+  "last_updated": "2026-04-22T04:44:15Z",
   "vendors": [
     {
       "id": "openai",
@@ -25,7 +25,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 38.4,
+          "score": 39.6,
           "unit": "%"
         },
         {
@@ -35,7 +35,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1347.0,
+        "lmarena_elo": 1417.0,
         "livebench_avg": 74.8,
         "aa_intelligence_index": 56.8
       },
@@ -66,7 +66,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 51.9,
+          "score": 46.8,
           "unit": "%"
         },
         {
@@ -76,7 +76,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1382.0,
+        "lmarena_elo": 1389.0,
         "livebench_avg": 73.9,
         "aa_intelligence_index": 57.28
       },
@@ -107,7 +107,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 41.9,
+          "score": 42.8,
           "unit": "%"
         },
         {
@@ -117,7 +117,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1349.0,
+        "lmarena_elo": 1378.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -168,7 +168,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1310.0,
+        "lmarena_elo": 1354.0,
         "aa_intelligence_index": 41.71,
         "livebench_avg": 70.2
       },
@@ -199,7 +199,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 46.2,
+          "score": 36.1,
           "unit": "%"
         },
         {
@@ -209,7 +209,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1285.0,
+        "lmarena_elo": 1342.0,
         "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
@@ -240,7 +240,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 38.3,
+          "score": 39.5,
           "unit": "%"
         },
         {
@@ -250,7 +250,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1342.0,
+        "lmarena_elo": 1337.0,
         "aa_intelligence_index": 49.2,
         "livebench_avg": 66.4
       },
@@ -281,7 +281,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 30.2,
+          "score": 26.9,
           "unit": "%"
         },
         {
@@ -291,7 +291,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1308.0,
+        "lmarena_elo": 1327.0,
         "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
