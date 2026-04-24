@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-23T04:48:20Z",
+  "last_updated": "2026-04-24T04:52:28Z",
   "vendors": [
     {
       "id": "openai",
@@ -8,36 +8,36 @@
       "product": "ChatGPT",
       "latest_model": {
         "id": "",
-        "display_name": "GPT-5.4",
+        "display_name": "GPT-5.5",
         "release_date": "",
         "source_url": "https://openai.com/news/"
       },
       "official_scores": [
         {
           "benchmark": "GPQA Diamond",
-          "score": 92.0,
+          "score": 93.5,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 41.6,
+          "score": 44.3,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 39.6,
+          "score": 41.0,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 73.9,
+          "score": 75.9,
           "unit": "%"
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1347.0,
+        "lmarena_elo": 1368.0,
         "livebench_avg": 74.8,
-        "aa_intelligence_index": 56.8
+        "aa_intelligence_index": 60.24
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -66,7 +66,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 46.9,
+          "score": 41.9,
           "unit": "%"
         },
         {
@@ -76,7 +76,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1425.0,
+        "lmarena_elo": 1345.0,
         "livebench_avg": 73.9,
         "aa_intelligence_index": 57.28
       },
@@ -107,7 +107,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 0.0,
+          "score": 50.6,
           "unit": "%"
         },
         {
@@ -117,7 +117,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1389.0,
+        "lmarena_elo": 1339.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -168,7 +168,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1321.0,
+        "lmarena_elo": 1312.0,
         "aa_intelligence_index": 41.71,
         "livebench_avg": 70.2
       },
@@ -209,7 +209,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1294.0,
+        "lmarena_elo": 1287.0,
         "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
@@ -240,7 +240,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 36.7,
+          "score": 27.0,
           "unit": "%"
         },
         {
@@ -250,7 +250,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1371.0,
+        "lmarena_elo": 1274.0,
         "aa_intelligence_index": 53.83,
         "livebench_avg": 66.4
       },
@@ -281,7 +281,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 24.7,
+          "score": 30.2,
           "unit": "%"
         },
         {
@@ -291,7 +291,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1308.0,
+        "lmarena_elo": 1259.0,
         "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
