@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-24T04:52:28Z",
+  "last_updated": "2026-04-25T04:34:14Z",
   "vendors": [
     {
       "id": "openai",
@@ -25,7 +25,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 41.0,
+          "score": 51.6,
           "unit": "%"
         },
         {
@@ -66,7 +66,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 41.9,
+          "score": 43.3,
           "unit": "%"
         },
         {
@@ -107,7 +107,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 50.6,
+          "score": 20.9,
           "unit": "%"
         },
         {
@@ -131,29 +131,19 @@
       "product": "DeepSeek Chat",
       "latest_model": {
         "id": "",
-        "display_name": "DeepSeek V3.2",
+        "display_name": "DeepSeek V4 Pro",
         "release_date": "",
         "source_url": "https://api-docs.deepseek.com/news/"
       },
       "official_scores": [
         {
-          "benchmark": "MMLU-Pro",
-          "score": 86.2,
-          "unit": "%"
-        },
-        {
           "benchmark": "GPQA Diamond",
-          "score": 84.0,
+          "score": 88.8,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 22.2,
-          "unit": "%"
-        },
-        {
-          "benchmark": "LiveCodeBench",
-          "score": 86.2,
+          "score": 35.9,
           "unit": "%"
         },
         {
@@ -163,13 +153,13 @@
         },
         {
           "benchmark": "IFBench",
-          "score": 60.7,
+          "score": 76.5,
           "unit": "%"
         }
       ],
       "third_party_scores": {
         "lmarena_elo": 1312.0,
-        "aa_intelligence_index": 41.71,
+        "aa_intelligence_index": 51.51,
         "livebench_avg": 70.2
       },
       "fetch_status": "ok",
@@ -199,7 +189,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 46.2,
+          "score": 27.2,
           "unit": "%"
         },
         {
@@ -240,7 +230,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 27.0,
+          "score": 42.5,
           "unit": "%"
         },
         {
@@ -250,7 +240,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1274.0,
+        "lmarena_elo": 1380.0,
         "aa_intelligence_index": 53.83,
         "livebench_avg": 66.4
       },
