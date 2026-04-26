@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-25T04:34:14Z",
+  "last_updated": "2026-04-26T04:56:47Z",
   "vendors": [
     {
       "id": "openai",
@@ -35,7 +35,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1368.0,
+        "lmarena_elo": 1347.0,
         "livebench_avg": 74.8,
         "aa_intelligence_index": 60.24
       },
@@ -76,7 +76,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1345.0,
+        "lmarena_elo": 1418.0,
         "livebench_avg": 73.9,
         "aa_intelligence_index": 57.28
       },
@@ -117,7 +117,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1339.0,
+        "lmarena_elo": 1402.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -158,7 +158,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1312.0,
+        "lmarena_elo": 1398.0,
         "aa_intelligence_index": 51.51,
         "livebench_avg": 70.2
       },
@@ -199,7 +199,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1287.0,
+        "lmarena_elo": 1361.0,
         "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
@@ -240,7 +240,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1380.0,
+        "lmarena_elo": 1385.0,
         "aa_intelligence_index": 53.83,
         "livebench_avg": 66.4
       },
@@ -281,7 +281,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1259.0,
+        "lmarena_elo": 1333.0,
         "aa_intelligence_index": 49.62,
         "livebench_avg": 65.0
       },
