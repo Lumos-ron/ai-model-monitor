@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-17T05:45:12Z",
+  "last_updated": "2026-05-18T06:10:02Z",
   "vendors": [
     {
       "id": "openai",
@@ -35,7 +35,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1292.0,
+        "lmarena_elo": 1347.0,
         "livebench_avg": 74.8,
         "aa_intelligence_index": 60.24
       },
@@ -76,7 +76,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1333.0,
+        "lmarena_elo": 1338.0,
         "livebench_avg": 73.9,
         "aa_intelligence_index": 57.28
       },
@@ -117,7 +117,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1346.0,
+        "lmarena_elo": 1326.0,
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
@@ -158,7 +158,7 @@
         }
       ],
       "third_party_scores": {
-        "lmarena_elo": 1338.0,
+        "lmarena_elo": 1299.0,
         "aa_intelligence_index": 51.51,
         "livebench_avg": 70.2
       },
