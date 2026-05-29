@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-28T06:08:12Z",
+  "last_updated": "2026-05-29T06:09:50Z",
   "vendors": [
     {
       "id": "openai",
@@ -25,7 +25,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 46.88,
+          "score": 40.97,
           "unit": "%"
         },
         {
@@ -49,36 +49,36 @@
       "product": "Claude",
       "latest_model": {
         "id": "",
-        "display_name": "Claude Opus 4.7",
+        "display_name": "Claude Opus 4.8",
         "release_date": "",
         "source_url": "https://www.anthropic.com/news"
       },
       "official_scores": [
         {
           "benchmark": "GPQA Diamond",
-          "score": 91.41,
+          "score": 92.02,
           "unit": "%"
         },
         {
           "benchmark": "Humanity's Last Exam",
-          "score": 39.62,
+          "score": 45.74,
           "unit": "%"
         },
         {
           "benchmark": "SciCode",
-          "score": 50.12,
+          "score": 24.42,
           "unit": "%"
         },
         {
           "benchmark": "IFBench",
-          "score": 58.64,
+          "score": 62.24,
           "unit": "%"
         }
       ],
       "third_party_scores": {
         "lmarena_elo": 1348.0,
         "livebench_avg": 73.9,
-        "aa_intelligence_index": 57.28
+        "aa_intelligence_index": 61.44
       },
       "fetch_status": "ok",
       "fetch_error": null
@@ -107,7 +107,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 51.5,
+          "score": 0.0,
           "unit": "%"
         },
         {
@@ -148,7 +148,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 42.36,
+          "score": 37.27,
           "unit": "%"
         },
         {
@@ -230,7 +230,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 43.06,
+          "score": 39.12,
           "unit": "%"
         },
         {
