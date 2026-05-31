@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-30T05:44:25Z",
+  "last_updated": "2026-05-31T06:14:09Z",
   "vendors": [
     {
       "id": "openai",
@@ -25,7 +25,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 40.97,
+          "score": 53.24,
           "unit": "%"
         },
         {
@@ -66,7 +66,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 54.51,
+          "score": 46.88,
           "unit": "%"
         },
         {
@@ -107,7 +107,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 3.94,
+          "score": 51.5,
           "unit": "%"
         },
         {
@@ -148,7 +148,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 44.91,
+          "score": 46.41,
           "unit": "%"
         },
         {
@@ -271,7 +271,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 24.65,
+          "score": 30.21,
           "unit": "%"
         },
         {
