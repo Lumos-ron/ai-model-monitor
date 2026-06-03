@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-02T06:38:28Z",
+  "last_updated": "2026-06-03T06:48:53Z",
   "vendors": [
     {
       "id": "openai",
@@ -25,7 +25,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 44.21,
+          "score": 46.88,
           "unit": "%"
         },
         {
@@ -66,7 +66,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 43.29,
+          "score": 34.38,
           "unit": "%"
         },
         {
@@ -103,6 +103,11 @@
         {
           "benchmark": "Humanity's Last Exam",
           "score": 44.72,
+          "unit": "%"
+        },
+        {
+          "benchmark": "SciCode",
+          "score": 43.4,
           "unit": "%"
         },
         {
@@ -143,7 +148,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 44.91,
+          "score": 23.61,
           "unit": "%"
         },
         {
@@ -184,7 +189,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 36.11,
+          "score": 27.2,
           "unit": "%"
         },
         {
@@ -266,7 +271,7 @@
         },
         {
           "benchmark": "SciCode",
-          "score": 26.85,
+          "score": 24.65,
           "unit": "%"
         },
         {
