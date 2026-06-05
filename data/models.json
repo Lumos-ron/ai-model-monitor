@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-04T06:39:31Z",
+  "last_updated": "2026-06-05T06:18:54Z",
   "vendors": [
     {
       "id": "openai",
@@ -34,8 +34,8 @@
         "livebench_avg": 74.8,
         "aa_intelligence_index": 60.24
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "anthropic",
@@ -75,8 +75,8 @@
         "livebench_avg": 73.9,
         "aa_intelligence_index": 61.44
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "google",
@@ -116,8 +116,8 @@
         "aa_intelligence_index": 57.18,
         "livebench_avg": 72.5
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "deepseek",
@@ -157,8 +157,8 @@
         "aa_intelligence_index": 51.51,
         "livebench_avg": 70.2
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "zhipu",
@@ -198,8 +198,8 @@
         "aa_intelligence_index": 51.41,
         "livebench_avg": 68.1
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "xiaomi",
@@ -239,8 +239,8 @@
         "aa_intelligence_index": 53.83,
         "livebench_avg": 66.4
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     },
     {
       "id": "minimax",
@@ -280,8 +280,8 @@
         "aa_intelligence_index": 54.67,
         "livebench_avg": 65.0
       },
-      "fetch_status": "ok",
-      "fetch_error": null
+      "fetch_status": "error",
+      "fetch_error": "discover: Error code: 404 - {'error': {'message': 'Not found the model kimi-k2-turbo-preview or Permission denied', 'type': 'resource_not_found_error'}}"
     }
   ]
 }
